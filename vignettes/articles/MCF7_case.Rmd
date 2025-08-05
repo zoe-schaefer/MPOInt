@@ -1,0 +1,14 @@
+---
+title: "MCF7_case"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(MPOInt)
+```

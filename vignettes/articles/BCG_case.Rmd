@@ -1,0 +1,56 @@
+---
+title: "BCG case"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(MPOInt)
+```
+
+```{r Total processing}
+THP1_total <- dplyr::rename(THP1_total, all_of(c(
+  "log2(FC)" = "Abundance Ratio (log2): (JMI) / (Control)",
+  "P value" = "Abundance Ratio Adj. P-Value: (JMI) / (Control)"
+)))
+THP1_total <- dplyr::left_join(THP1_total, OrganismDbi::select(
+  Homo.sapiens,
+  keys = keys(Homo.sapiens, keytype = "UNIPROT"),
+  columns = c("ENTREZID", "SYMBOL"), keytype = "UNIPROT"
+), by = join_by(Accession == UNIPROT), keep = FALSE)
+THP1_total <- THP1_total %>%
+  tidyr::drop_na(SYMBOL) %>%
+  dplyr::distinct(SYMBOL, .keep_all = TRUE)
+
+THP1_total <- THP1_total %>%
+  dplyr::mutate("SYMBOL2" = `SYMBOL`) %>%
+  tibble::column_to_rownames(var = "SYMBOL")
+```
+
+```{r}
+THP1_phospho <- THP1_phospho %>%
+  dplyr::mutate("SYMBOL2" = `SYMBOL`) %>%
+  tidyr::drop_na(SYMBOL2, `log2(FC)`, `P value`) %>%
+  dplyr::distinct(SYMBOL2, .keep_all = TRUE) %>%
+  tibble::column_to_rownames(var = "SYMBOL")
+
+THP1_phospho <- left_join(THP1_phospho, OrganismDbi::select(
+  Homo.sapiens,
+  keys = keys(Homo.sapiens, keytype = "ENTREZID"),
+  columns = c("UNIPROT", "SYMBOL"), keytype = "ENTREZID"
+), by = join_by(SYMBOL2 == SYMBOL, ENTREZID), relationship = "many-to-many")
+```
+
+```{r}
+
+```
+
+
+
+
+

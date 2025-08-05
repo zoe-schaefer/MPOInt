@@ -1,0 +1,21 @@
+#' THP-1 histone proteome dataset.
+#'
+#' Histone proteome data from Schaefer et al. (2024). Infected condition: THP-1 macrophages exposed to M. bovis BCG for 24 hours at a multiplicity of 4.
+#'
+#' @format A data frame with 215 rows and 11 variables:
+#' \describe{
+#' \item{PTM}{PTM descriptions.}
+#' \item{C1}{C1 peptide abundances.}
+#' \item{I1}{I1 peptide abundances.}
+#' \item{C2}{C2 peptide abundances.}
+#' \item{I2}{I2 peptide abundances.}
+#' \item{C3}{C3 peptide abundances.}
+#' \item{I3}{I3 peptide abundances.}
+#' \item{C4}{C4 peptide abundances.}
+#' \item{I4}{I4 peptide abundances.}
+#' \item{C5}{C5 peptide abundances.}
+#' \item{I5}{I5 peptide abundances.}
+#' }
+#'
+#' @source \url{https://doi.org/10.1016/j.mcpro.2024.100851}
+"THP1_histones"
