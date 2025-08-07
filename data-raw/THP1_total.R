@@ -1,7 +1,7 @@
 ## Code to prepare `THP1_total` dataset
 # Reading in total proteome data, selecting a range to reduce initial variable size
 THP1_total <- readxl::read_excel("data-raw/33060_Control_vs_Infection_JMI_abundances_normalizedabundances.xlsx",
-  range = cell_cols("D:BI")
+  range = readxl::cell_cols("D:BI")
 )
 # Selecting just the columns we're interested in
 THP1_total <- dplyr::select(THP1_total, all_of(c(

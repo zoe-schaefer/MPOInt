@@ -11,26 +11,67 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(MPOInt)
+library(dplyr)
 ```
 
+```{r}
+total_p_threshold <- 0.05
+total_FC_threshold <- 0.5
+```
+
+# 1. Proteome data processing
+
 ```{r Total processing}
+# Renaming to reader-friendly names
 THP1_total <- dplyr::rename(THP1_total, all_of(c(
   "log2(FC)" = "Abundance Ratio (log2): (JMI) / (Control)",
   "P value" = "Abundance Ratio Adj. P-Value: (JMI) / (Control)"
 )))
+# Mapping ENTREZ IDs and a gene symbol column to UniProt IDs for later analysis
 THP1_total <- dplyr::left_join(THP1_total, OrganismDbi::select(
-  Homo.sapiens,
-  keys = keys(Homo.sapiens, keytype = "UNIPROT"),
+  Homo.sapiens::Homo.sapiens,
+  keys = OrganismDbi::keys(Homo.sapiens, keytype = "UNIPROT"),
   columns = c("ENTREZID", "SYMBOL"), keytype = "UNIPROT"
-), by = join_by(Accession == UNIPROT), keep = FALSE)
+), by = dplyr::join_by(Accession == UNIPROT), keep = FALSE)
+# Dropping anything with an undefined or duplicate symbol
 THP1_total <- THP1_total %>%
   tidyr::drop_na(SYMBOL) %>%
   dplyr::distinct(SYMBOL, .keep_all = TRUE)
-
+# Assigning row names
 THP1_total <- THP1_total %>%
   dplyr::mutate("SYMBOL2" = `SYMBOL`) %>%
   tibble::column_to_rownames(var = "SYMBOL")
+
+# Creating a separate set of significant points for later analysis
+THP1_total_sig <- dplyr::filter(THP1_total, `P value` < total_p_threshold)
 ```
+
+## 1.1. Volcano plots
+```{r}
+# Setting this value - geom_text_repel will only show so many labels at once
+# for legibility reasons. Adjust this threshold to show more/fewer points.
+options("ggrepel.max.overlaps" = 20)
+
+volcanoplot(df = THP1_total, fc_col = "log2(FC)",
+            p_col = "P value", label_col = "SYMBOL2") +
+  ggtitle("Volcano plot") + xlab("log2(FC)") + ylab("-log10(P-value)")
+```
+
+```{r Groups}
+# For known groups of interest
+# volcano_groups
+```
+
+
+TODO total pathway enrichment
+
+TODO phospho examples
+
+TODO histone processing function
+TODO differential expression?
+TODO disease enrichment
+TODO network calls
+
 
 ```{r}
 THP1_phospho <- THP1_phospho %>%
