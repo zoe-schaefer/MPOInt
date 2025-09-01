@@ -7,7 +7,8 @@
 #' \item{log2(FC)}{The log2 transformed fold change of infected/control cells.}
 #' \item{P value}{Calculated unadjusted P value.}
 #' \item{ENTREZID}{ENTREZ ID for pathway analysis.}
-#' \item{SYMBOL}{Common gene symbols.}
+#' \item{SYMBOL2}{Common gene symbols.}
+#' \item{UNIPROT}{UNIPROT IDs for the identified proteins.}
 #' }
 #'
 #' @source \url{https://doi.org/10.1021/acs.jproteome.9b00895}

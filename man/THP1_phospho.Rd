@@ -10,7 +10,8 @@ A data frame with 6,121 rows and 4 variables:
 \item{log2(FC)}{The log2 transformed fold change of infected/control cells.}
 \item{P value}{Calculated unadjusted P value.}
 \item{ENTREZID}{ENTREZ ID for pathway analysis.}
-\item{SYMBOL}{Common gene symbols.}
+\item{SYMBOL2}{Common gene symbols.}
+\item{UNIPROT}{UNIPROT IDs for the identified proteins.}
 }
 }
 \source{

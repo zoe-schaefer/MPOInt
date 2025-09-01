@@ -5,8 +5,8 @@
 #' @format A data frame with 37 rows and 12 variables:
 #' \describe{
 #' \item{PTM}{PTM descriptions.}
+#' \item{MCF7 std}{Standard deviation in MCF-7 cells.}
 #' \item{MCF7 ave (5 reps)}{Average expression in MCF-7 cells.}
-#' \item{MCF std}{Standard deviation in MCF-7 cells.}
 #' \item{293 ave (5 reps)}{Average expression in HEK293 cells.}
 #' \item{HaCAT ave (5 reps)}{Average expression in HaCAT cells.}
 #' \item{hESC ave (6 reps)}{Average expression in hESC cells.}
