@@ -16,5 +16,9 @@ Imports:
     dplyr,
     ggplot2,
     ggrepel,
+    knitr,
     rlang,
+    rmarkdown,
     tidyr
+URL: https://github.com/zoe-schaefer/MPOInt, https://zoe-schaefer.github.io/MPOInt/
+BugReports: https://github.com/zoe-schaefer/MPOInt/issues

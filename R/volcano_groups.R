@@ -109,6 +109,7 @@ volcano_groups <- function(df, fc_col, p_col, fc_thr = 0.5, p_thr = 0.05,
 
   df$group_col <- as.factor(df$group_col)
   df$group_col <- relevel(df$group_col, "None")
+  df <- dplyr::arrange(df, group_col)
 
 
   # Create base ggplot object to be returned - this can be further modified with other ggplot calls
