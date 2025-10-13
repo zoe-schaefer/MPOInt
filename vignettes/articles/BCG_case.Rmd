@@ -313,7 +313,7 @@ histone_frag$`log2(FC)`[histone_frag$`log2(FC)` == "NaN"] <- NA
 histone_frag$FC[histone_frag$FC == "NaN"] <- NA
 ```
 
-The `volcano_epi()` function plots the epiproteome data, assuming that all values have already been transformed and statistical analysis has already been performed.
+The `volcano_epi()` function plots the epiproteome data, assuming that all values have already been transformed and statistical analysis has already been performed. To address infinite fold change values that appear when a protein is not detected in one condition, it also sets them to have a unique shape in the final plot and assigns a fold change value equal to 2.5 times the maximum valid value.
 
 ```{r fragment-plot}
 # Setting this value - geom_text_repel will only show so many labels at once
@@ -471,6 +471,7 @@ cat(paste("**Disease/Total:** ", paste(intersect(GDA_BlCa$gene_symbol, total_FC$
 cat(paste("**Total/Phospho:** ", paste(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2), collapse = ", ")))
 cat(paste("**Disease/Phospho/Total:** ", paste(intersect(intersect(GDA_BlCa$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2), collapse = ", ")))
 ```
+
 
 ```{r clear-4}
 # Clearing large variables
