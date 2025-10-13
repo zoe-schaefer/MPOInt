@@ -7,7 +7,7 @@ Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Config/Needs/website: rmarkdown
 Depends: 
     R (>= 3.5)
@@ -16,9 +16,10 @@ Imports:
     dplyr,
     ggplot2,
     ggrepel,
-    knitr,
     rlang,
-    rmarkdown,
     tidyr
 URL: https://github.com/zoe-schaefer/MPOInt, https://zoe-schaefer.github.io/MPOInt/
 BugReports: https://github.com/zoe-schaefer/MPOInt/issues
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

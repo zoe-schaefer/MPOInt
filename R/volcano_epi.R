@@ -28,6 +28,12 @@
 #' }
 volcano_epi <- function(df, fc_col, p_col, fc_thr = 0.5, p_thr = 0.05,
                         label_col = NA, ...){
+
+  shape_col <- NULL
+  x_col <- NULL
+  p_log10 <- NULL
+  DiffExp <- NULL
+
   # Check valid inputs first
   if(!is.data.frame(df)) {
     stop(paste(df, " is not a data frame.", sep = ""))

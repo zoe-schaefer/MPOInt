@@ -1,7 +1,8 @@
 ---
 title: "MCF7 case"
+bibliography: "references.bib"
 ---
-This pipeline is intended for use with three levels of proteomics data: total proteome, phosphoproteome, and histone proteome. See @Schaefer2024 for more detail on the total and histone proteome; phosphoproteome data is from @choudhary2020. Total and phosphoproteome data are designed to be input as an Excel sheet from Proteome Discoverer, and the histone data are the aggregated ratios from EpiProfile (@Yuan2018).
+This pipeline is intended for use with three levels of proteomics data: total proteome, phosphoproteome, and histone proteome. Total and phosphoproteome data are sourced from @Han2024. Total and phosphoproteome data are designed to be input as an Excel sheet from MaxQuant, and the histone data are derived from @LeRoy2013.
 
 For the reader, code chunks are collapsible in-text. The full R Markdown source document can also be downloaded from this page by clicking the “Code” dropdown above. Additionally, we have made available the files generated from our data at the project repository on Github. Other files can be downloaded from their respective sources.
 
@@ -13,18 +14,43 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, include = FALSE}
+if (!requireNamespace('BiocManager', quietly = TRUE)) {
+    install.packages('BiocManager')
+}
+require('BiocManager')
+
 library(MPOInt)
-library(dplyr)
-library(clusterProfiler)
-library(enrichplot)
-library(stringr)
-library(tibble)
+# Install from CRAN if necessary
+CRAN_pkgs <- c("dplyr", "stringr", "tibble", "ggvenn", "devtools",
+               "reticulate", "igraph", "tidyr", "BiocManager",
+               "ggrepel", "scales", "paletteer")
+package.check <- sapply(
+  CRAN_pkgs,
+  FUN = function(x) {
+    if (!requireNamespace(x, quietly = TRUE)) {
+      install.packages(x, dependencies = TRUE)
+      }
+    library(x, character.only = TRUE)
+  }
+)
+
+Bioc_pkgs <- c("clusterProfiler", "enrichplot")
+package.check <- sapply(
+  Bioc_pkgs,
+  FUN = function(x) {
+    if (!requireNamespace(x, quietly = TRUE)) {
+      BiocManager::install(x, dependencies = TRUE)
+      }
+    library(x, character.only = TRUE)
+  }
+)
+
+install_gitlab("medbio/disgenet2r", quiet = TRUE)
 library(disgenet2r)
-library(ggvenn)
-library(reticulate)
-library(igraph)
-library(tidyr)
-library(ggrepel)
+
+library(MPOInt)
+
+remove(Bioc_pkgs, CRAN_pkgs, package.check)
 ```
 
 Most variables that need to be adjusted for individual datasets should be set here.
@@ -98,8 +124,8 @@ This section prepares and performs a GSEA analysis on the total proteome data.
 
 ```{r total-GSEA-list}
 # Need a named list in decreasing order
-total_GSEA_list <- THP1_total$`log2(FC)`
-names(total_GSEA_list) <- THP1_total$ENTREZID
+total_GSEA_list <- MCF7_total$`log2(FC)`
+names(total_GSEA_list) <- MCF7_total$ENTREZID
 total_GSEA_list <- na.omit(total_GSEA_list)
 total_GSEA_list <- sort(total_GSEA_list, decreasing = TRUE)
 ```
@@ -229,49 +255,12 @@ rm(phospho_GSEA_GO, phospho_GSEA_KEGG, MCF7_phospho,
 ```
 
 # 3. Histone processing
-This section processes EpiProfile output into a more readable, user-friendly format. We also perform basic statistical analysis and log transformations on the data.
-```{r fragment-histone-processing, eval = FALSE}
-data(MCF7_histones)
-histone_frag_raw <- tidyr::drop_na(MCF7_histones)
-histone_frag_raw$PTM <- histone_frag_raw$PTM %>% 
-  str_replace_all("H3_3_8", "H3 3-8") %>% 
-  str_replace_all("H3_9_17", "H3 9-17") %>% 
-  str_replace_all("H3_18_26", "H3 18-26") %>% 
-  str_replace_all("H3_27_40", "H3 27-40") %>% 
-  str_replace_all("H33_27_40", "H3.3 27-40") %>% 
-  str_replace_all("H3_41_49", "H3 41-49") %>% 
-  str_replace_all("H3_54_63", "H3 54-63") %>% 
-  str_replace_all("H3_73_83", "H3 73-83") %>% 
-  str_replace_all("H3_117_128", "H3 117-128") %>% 
-  str_replace_all("H4_4_17", "H4 4-17") %>% 
-  str_replace_all("H4_20_23", "H4 20-23") %>% 
-  str_replace_all("H4_24_35", "H4 24-35") %>% 
-  str_replace_all("H4_40_45", "H4 40-45") %>% 
-  str_replace_all("H4_79_92", "H4 79-92") %>% 
-  str_replace_all("H1_1_35", "H1 1-35") %>% 
-  str_replace_all("H1_54_81", "H1 54-71") %>% 
-  str_replace_all("H2A1_36_42", "H2A1 36-42") %>% 
-  str_replace_all("H2A3_36_42", "H2A3 36-42") %>% 
-  str_replace_all("H2AX_36_42", "H2AX 36-42") %>% 
-  str_replace_all("H2A1_4_11", "H2A1 4-11") %>% 
-  str_replace_all("H2AJ_4_11", "H2AJ 4-11") %>% 
-  str_replace_all("H2AX_4_11", "H2AX 4-11") %>% 
-  str_replace_all("H2A1_1_11", "H2A1 1-11") %>% 
-  str_replace_all("H2AV_1_19", "H2AV 1-19") %>% 
-  str_replace_all("H2AZ_1_19", "H2AZ 1-19") %>% 
-  str_replace_all("H2A1_12_17", "H2A1 12-17") %>% 
-  str_replace_all("H2A3_12_17", "H2A3 12-17") %>% 
-  str_replace_all("H2A1_72_77", "H2A1 72-77") %>% 
-  str_replace_all("H2A_82_88", "H2A 82-88") %>% 
-  str_replace_all("H2A_1_88", "H2A 1-88") %>% 
-  str_replace_all("H2B_1_29", "H2B 1-29")
+This section processes EpiProfile output into a more readable, user-friendly format. In this case, the epiproteome data is in a summary statistics format, where each condition is only presented as a mean value with standard deviation. We create a standard baseline and then generate a P value from a T score.
 
-```
-
-**For summary statistics data**: switch all chunks in section 3 with `eval = FALSE` in the chunk header to `eval = TRUE` and vice versa. Do not alter chunk headers without this item.
-```{r histone-import-mean, eval = TRUE}
+```{r histone-import-mean}
 data(MCF7_histones)
 histone_frag_raw <- MCF7_histones
+# Creating an overall baseline by averaging the non-cancer cell lines
 histone_frag_raw<- histone_frag_raw %>% mutate("avg std" = apply(pick("293 ave (5 reps)", "HaCAT ave (5 reps)",
                                     "hESC ave (6 reps)", "HFF ave (7 reps)",
                                     "Mdm13 ave (5 reps)"), 1, sd))
@@ -288,39 +277,7 @@ histone_frag <- histone_frag %>%
 
 ## 3.1. Individual values
 ### 3.1.1. Fragments
-```{r fragment-histone-processing2, eval = FALSE}
-# Group two conditions together
-histone_frag <- histone_frag_raw
-histone_frag <- histone_frag %>%
-  relocate(contains("I"), .after = last_col()) %>% 
-  relocate("PTM")
-
-# Calculate infected/control fold change and P value
-histone_frag <- histone_frag %>% 
-  rowwise() %>% 
-  mutate(c_mean = mean(c_across("C1":"C5")),
-         i_mean = mean(c_across("I1":"I5")),
-         FC = c_across(i_mean)/c_across(c_mean),
-         "log2(FC)" = log2(FC),
-         is_constant = all(c_across("C1":"C5") == c_across("I1":"I5")))
-
-histone_frag <- column_to_rownames(histone_frag, var = "PTM")
-histone_frag$PTM <- rownames(histone_frag)
-
-histone_frag$"P value" <- NA
-histone_p <- histone_frag %>% 
-  rowwise() %>% 
-  filter(is_constant == FALSE) %>% 
-  # Removing any proteins that have all equal values, which gives an 
-  # error when running t.test()
-  mutate("P value" = t.test(c_across("C1":"C5"), c_across("I1":"I5"),
-         alternative = "two.sided", var.equal = TRUE)$p.value)
-
-histone_frag <- full_join(histone_frag, histone_p)
-
-histone_frag$`log2(FC)`[histone_frag$`log2(FC)` == "NaN"] <- NA
-histone_frag$FC[histone_frag$FC == "NaN"] <- NA
-```
+The data available here was already in a legible format, so we do not have to process it extensively.
 
 ```{r fragment-plot}
 # Setting this value - geom_text_repel will only show so many labels at once
@@ -332,8 +289,9 @@ volcano_epi(df = histone_frag, fc_col = "log2(FC)",
   labs(title = "Volcano plot", x = "log2(FC)", y = "-log10(P-value)")
 ```
 
-
 ### 3.1.2. Single
+This section parses the fragments into single PTMs. Each occurrence is counted individually - for example, H4 4-17 K5acK12acK16ac would be counted as H4K5ac, H4K8ac, and H4K16ac.
+
 ```{r single-processing, warning = FALSE}
 # warnings silenced - multiple warnings come up if a regex string is empty
 histone_single_raw <- histone_frag_raw
@@ -360,16 +318,12 @@ histone_single_long <- histone_single_raw %>%
   unite(col = "PTM", c(`PTM`, `single_PTM`), sep = " ", remove = TRUE) %>% 
   mutate("PTM" = str_squish(PTM))
 
-
 histone_single_long$PTM <- str_remove(histone_single_long$PTM, " .+ ") %>% 
   str_replace("me1", "me")
 histone_single_long <- bind_rows(histone_single_long, histone_single_unmod)
 ```
-If the data being analyzed has standard deviation and mean listed but not individual values, calculate the T score and then the P value from that. To run this chunk, remove `eval = FALSE` in the chunk header and add it to the `single-stats-p` chunk.
 
-
-
-```{r single-stats-t, eval = TRUE}
+```{r single-stats-t}
 histone_single_raw <- histone_single_long %>% 
   group_by(`PTM`) %>% 
   summarize("sample ave" = mean(`MCF7 ave (5 reps)`),
@@ -388,64 +342,22 @@ histone_single_p$PTM <- str_remove(histone_single_p$PTM, " .+ ") %>%
   str_remove("un") %>% 
   str_replace("me1", "me")
 ```
-
-```{r single-stats-p, eval = FALSE}
-
-histone_single_long_p <- histone_single_long %>% 
-  group_by(`PTM`) %>% 
-  summarize("C1" = mean(C1), "C2" = mean(C2), "C3" = mean(C3),
-            "C4" = mean(C4), "C5" = mean(C5), "I1" = mean(I1),
-            "I2" = mean(I2), "I3" = mean(I3), "I4" = mean(I4),
-            "I5" = mean(I5))
-
-# Calculate infected/control fold change and P value
-histone_single_p <- histone_single_long_p %>% 
-  rowwise() %>% 
-  mutate(c_mean = mean(c_across("C1":"C5")),
-         i_mean = mean(c_across("I1":"I5")),
-         FC = c_across(i_mean)/c_across(c_mean),
-         "log2(FC)" = log2(FC),
-         is_constant = all(c_across("C1":"C5") == c_across("I1":"I5")))
-
-histone_single_p <- column_to_rownames(histone_single_p, var = "PTM")
-histone_single_p$PTM <- rownames(histone_single_p)
-
-histone_single_p$"P value" <- NA
-single_p <- histone_single_p %>% 
-  rowwise() %>% 
-  filter(is_constant == FALSE) %>% 
-  # Removing any proteins that have all equal values, which gives an 
-  # error when running t.test()
-  mutate("P value" = t.test(c_across("C1":"C5"), c_across("I1":"I5"),
-         alternative = "two.sided", var.equal = TRUE)$p.value)
-
-histone_single_p <- full_join(histone_single_p, single_p)
-
-histone_single_p$`log2(FC)`[histone_single_p$`log2(FC)` == "NaN"] <- NA
-histone_single_p$FC[histone_single_p$FC == "NaN"] <- NA
-```
-
-```{r histone-single-opts}
-# Setting this value - geom_text_repel will only show so many labels at once
-# for legibility reasons. Adjust this threshold to show more/fewer points.
-options("ggrepel.max.overlaps" = 20)
-
-volcano_epi(df = histone_single_p, fc_col = "log2(FC)",
-            p_col = "P value", label_col = "PTM") +
-  labs(title = "Volcano plot", x = "log2(FC)", y = "-log10(P-value)")
-```
 ```{r clear-3}
+# Clearing large variables
 rm(MCF7_histones, histone_frag, histone_frag_raw, histone_p,
    histone_single_long, histone_single_long_p, histone_single_raw,
    histone_single_unmod, single_p)
 ```
 
 # 4. Disease enrichment
+Here we perform disease enrichment using the DisGeNET database. We first search for a list of Concept Unique Identifiers (CUIs) that identify a specific disease of interest. If a CUI is already known, that can be used in the following chunks.
 
 ```{r GDA-CUI-fetch}
 GDA_table_BC <- get_umls_from_vocabulary(disease = "breast cancer",  vocabulary = "NAME" ,  limit = 10)@qresult
 knitr::kable(GDA_table_BC, caption = "List of CUIs that map to breast cancer", row.names = F)  
 ```
+
+We enrich our primary disease of interest (breast cancer), but also include enrichment for hypertension and ovarian cancer.
 
 ```{r GDA-setup}
 GDA_ERBC <- disease2gene(disease = "UMLS_C0678222", database = "CURATED")@qresult
@@ -453,6 +365,7 @@ GDA_PAH <- disease2gene(disease = "UMLS_C2973725", database = "CURATED")@qresult
 GDA_OvCa <- disease2gene(disease = "UMLS_C0677886", database = "CURATED")@qresult
 ```
 
+This chunk creates Venn diagrams of the overlap between proteins that were significant and above the fold change threshold in the total and phosphoproteome, as well as the genes of interest that were just retrieved.
 
 ```{r GDA, fig.asp = 1}
 # Get lists of proteins that were significant AND above the FC threshold
@@ -465,7 +378,7 @@ ggvenn(list(
   "Total proteome" = total_FC$SYMBOL2,
   "Phosphoproteome" = phospho_FC$SYMBOL2),
   fill_color = c("#440154", "#21908C", "#FDE725"),
-  show_percentage = FALSE, text_size = 5) + ggtitle("Figure 6a: Venn diagram") + theme(
+  show_percentage = FALSE, text_size = 5) + ggtitle("MCF-7 enrichment") + theme(
   plot.title.position = "plot",
   plot.title = element_text(hjust = 0.5))
 
@@ -474,7 +387,7 @@ ggvenn(list(
   "Total proteome" = total_FC$SYMBOL2,
   "Phosphoproteome" = phospho_FC$SYMBOL2),
   fill_color = c("#440154", "#21908C", "#FDE725"),
-  show_percentage = FALSE, text_size = 5) + ggtitle("Figure 6a: Venn diagram") + theme(
+  show_percentage = FALSE, text_size = 5) + ggtitle("MCF-7 enrichment") + theme(
   plot.title.position = "plot",
   plot.title = element_text(hjust = 0.5))
 
@@ -483,10 +396,13 @@ ggvenn(list(
   "Total proteome" = total_FC$SYMBOL2,
   "Phosphoproteome" = phospho_FC$SYMBOL2),
   fill_color = c("#440154", "#21908C", "#FDE725"),
-  show_percentage = FALSE, text_size = 5) + ggtitle("Figure 6a: Venn diagram") + theme(
+  show_percentage = FALSE, text_size = 5) + ggtitle("MCF-7 enrichment") + theme(
   plot.title.position = "plot",
   plot.title = element_text(hjust = 0.5))
 ```
+
+We next print a list of proteins in the four intersecting areas for further investigation in our disease of interest.
+
 ```{r GDA-list, results = "asis"}
 # Print the list of proteins in each intersection
 cat(paste("**Disease/Phospho:** ", paste(intersect(GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2), collapse = ", ")))
@@ -496,6 +412,7 @@ cat(paste("**Disease/Phospho/Total:** ", paste(intersect(intersect(GDA_ERBC$gene
 ```
 
 ```{r clear-4}
+# Clearing large variables
 rm(GDA_ERBC, GDA_PAH, GDA_OvCa, GDA_table_BC)
 ```
 
@@ -503,16 +420,19 @@ rm(GDA_ERBC, GDA_PAH, GDA_OvCa, GDA_table_BC)
 # 5. Epigenetic network
 This section develops a network visualization of all epigenetic interactions as defined by EpiFactors (https://epifactors.autosome.org/). Increased dataset size may make networks difficult to visualize, so an interactive network is drawn in Python and rendered as an embedded HTML file.
 
+The `data(genes)` call imports a .csv file included with the MPOInt package, but can be replaced to update or change the database by downloading and importing the "Table of all proteins" file on the EpiFactors website.
+
 ```{r network-setup}
 data(genes)
 total_join <- inner_join(genes, dplyr::select(MCF7_total_sig, "log2(FC)", "P value", "SYMBOL2"), by = join_by("HGNC approved symbol" == "SYMBOL2"), multiple = "any") %>% 
   mutate("Source" = "Total")
 
-
 phospho_join <- inner_join(genes, dplyr::select(MCF7_phospho_sig, "log2(FC)", "P value", "SYMBOL2"), by = join_by("HGNC approved symbol" == "SYMBOL2"), multiple = "any") %>% 
   mutate("Source" = "Phospho")
 
 joined_data <- full_join(total_join, phospho_join)
+
+# Assigning differential expression identifiers
 joined_data$Diff <- case_when(joined_data$`log2(FC)` > 0 ~ "Up",
                              joined_data$`log2(FC)` < 0 ~ "Down")
 ```
@@ -526,7 +446,7 @@ ggplot(joined_data, aes(x = `log2(FC)`, y = -log10(`P value`))) +
   geom_hline(yintercept = -log10(total_p_threshold),
              alpha = 0.5, linetype = "dashed") +
   labs(x = "log2(Fold Change)", y = "-log10(P value)",
-       title = "Figure 7a: Volcano plot") +
+       title = "Combined data") +
   geom_text_repel(aes(label = `HGNC approved symbol`), show.legend = FALSE,
                   size = rel(3), max.overlaps = 20) +
   theme(legend.position = "bottom")
@@ -535,7 +455,7 @@ ggplot(joined_data, aes(x = `log2(FC)`, y = -log10(`P value`))) +
 # Formatting histone targets
 targets <- str_replace_all(str_flatten_comma(str_unique(c(joined_data$Product, joined_data$`Target entity`))), ", ", "|")
 
-# filter by that list
+# Filter by that list
 total_histone_int <- filter(histone_single_p, grepl(targets, PTM))
 total_histone_int$Diff <- case_when(total_histone_int$`log2(FC)` > 0 ~ "Up",
                              total_histone_int$`log2(FC)` < 0 ~ "Down",
@@ -551,7 +471,7 @@ ggplot(total_histone_int, aes(x = `log2(FC)`, y = -log10(`P value`))) +
   geom_hline(yintercept = -log10(total_p_threshold),
              alpha = 0.5, linetype = "dashed") +
   labs(x = "log2(Fold Change)", y = "-log10(P value)",
-       title = "Figure 7b: Volcano plot") +
+       title = "Included histone PTMs") +
   geom_text_repel(aes(label = PTM), show.legend = FALSE, size = rel(3)) +
   theme(legend.position = "bottom")
 ```
@@ -595,16 +515,20 @@ genes_histone_joined <- right_join(genes_histone_pivoted,
                                 relationship = "many-to-many"
                                 )
 genes_histone_joined <- relocate(genes_histone_joined, Complex, .after = PTM)
+
+# Ensuring no NA values remain, replacing "#" with a clearer identifier
 genes_histone_joined[genes_histone_joined == "#"] <- "No ID"
 genes_histone_joined$Complex <- genes_histone_joined$Complex %>%  replace_na("No ID")
 ```
 
 
-```{r complex-IDs}
+```{r vertices-edges}
+# Generating a dataframe for edges and a dataframe for unique vertices with metadata
 complexes <- unique(genes_histone_joined$Complex)
 n_complexes <- seq(1, length(complexes))
 complex_df <- data.frame(complexes, n_complexes)
-#TODO clean up
+
+# Ensuring all histone PTMs have the same complex and source labels
 histone_df <- dplyr::select(total_histone_int, c("PTM", "Diff"))
 histone_df$Symbol <- histone_df$PTM
 histone_df$Complex <- "No ID"
@@ -614,11 +538,9 @@ vertices_df <- bind_rows(histone_df, dplyr::select(genes_histone_pivoted, !c("lo
 vertices_df <- filter(vertices_df, grepl("^H", PTM))
 vertices_df$Complex <- case_when(vertices_df$Complex == "#" ~ "No ID",
                             .default = vertices_df$Complex)
-```
 
-```{r vertices-edges}
+# Creating a dataframe connecting edges (source and target vertices)
 complex_vertices <- data.frame(vertices = c(unique(genes_histone_joined$Symbol), unique(genes_histone_joined$PTM)))
-
 edges_df <- full_join(genes_histone_joined, complex_df, by = join_by("Complex" == "complexes")) %>% relocate(c("Symbol", "PTM"))
 edges_df <- left_join(complex_vertices, edges_df, by = join_by("vertices" == "Symbol")) %>% rename("Symbol" = "vertices")
 
@@ -633,86 +555,36 @@ edges_df$Complex <- case_when(is.na(edges_df$Complex) ~ "No ID",
 edges_df$Diff <- case_when(edges_df$Source == "Histone" ~ edges_df$Diff_hist,
                              .default = edges_df$Diff_gene)
 edges_df <- drop_na(edges_df, Diff)
-
 ```
 
-These alternative visualizations show the members of the identified complexes without connections.
+This alternative visualization shows the members of the identified complexes without connections.
 
 ```{r network-bars}
 sig_network <- distinct(group_by(filter(edges_df, Complex != "No ID"), Complex), Symbol, .keep_all = TRUE)
 sig_network["weight"] <- 1
 sig_network$Complex <- factor(sig_network$Complex, levels = unique(as.character(sig_network$Complex)))
-```
 
-```{r network-bins}
+PTM_colors <- setNames(c(paletteer_d("ggsci::default_igv", n = length(unique(histone_df$PTM)))), unique(histone_df$PTM))
+
+#paletteer_d("ggsci::default_igv") 
+
+#PTM_colors <- setNames(qualitative_hcl("Dark 3", rev = TRUE, n = length(unique(histone_df$PTM))), unique(histone_df$PTM))
+
 ggplot(sig_network, aes(x = Complex, y = Symbol, fill = PTM)) +
   geom_bin_2d() +
   theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1),
         axis.title.x = element_blank(), axis.title.y = element_blank()) +
-  scale_fill_viridis_d() +
+  scale_fill_manual(values = PTM_colors) +
   scale_y_discrete(limits = rev) +
   labs(title = "Figure 7d: Network bins")
 ```
 
-## 5.1 Python visualization
+## 5.1 Complex and member identification
+For future research use, we generate multiple tables containing the identified complexes, members, common targets, and identified PTMs.
 
-```{r py-import}
-vertices_df$Shapes <- case_when(vertices_df$Diff == "Up" ~ "triangle",
-                             vertices_df$Diff == "Down" ~ "triangleDown",
-                          vertices_df$Diff == "0" ~ "ellipse")
-vertices_df$Colors <- case_when(vertices_df$Source == "Total" ~ "red",
-                          vertices_df$Source == "Phospho" ~ "blue",
-                          vertices_df$Source == "Histone" ~ "gray")
-
-sig_network_py <- filter(vertices_df, Complex != "No ID" | Source == "Histone") %>% r_to_py()
-
-edges_py <- filter(edges_df, Complex != "No ID" | Source == "Histone") %>% r_to_py()
-```
-
-```{python py-setup}
-import pandas as pd, networkx as nx
-from pyvis.network import Network
-```
-
-```{python py-network}
-# Create NetworkX graph object
-G = nx.Graph()
-
-# Generate a nested dictionary/tuple with the node of interest ("Symbol") and 
-# the relevant attributes (shape and complex)
-node_list = []
-for i, row in r.sig_network_py.iterrows():
-  node_list.append((row["Symbol"], {"color": row.Colors, "Complex": row.Complex, "shape": row.Shapes}))
-G.add_nodes_from(node_list)
-
-# Generate a tuple for edges connecting proteins with PTMs
-edge_tup = []
-for i in range(len(r.edges_py["Symbol"])):
-  edge_tup.append((r.edges_py["Symbol"][i], r.edges_py["PTM"][i]))
-G.add_edges_from(edge_tup)
-
-# remove self-loops
-G.remove_edges_from(nx.selfloop_edges(G))
-
-# now remove nodes w/o edges
-lone_nodes = [node for node, degree in G.degree() if degree == 0]
-G.remove_nodes_from(lone_nodes)
-```
-
-```{python py-network-graph}
-# To change the parameters of what's being graphed, adjust the initial call to Network()
-net = Network(height="900px", notebook = True, select_menu = True, cdn_resources = "in_line")
-net.from_nx(G)
-net.save_graph("networkx-pyvis.html")
-```
-
-```{r print-HTML}
-htmltools::renderDocument(htmltools::htmlTemplate("networkx-pyvis.html"))
-```
-
-```{r complex-list}
+```{r complex-list, results = "asis"}
 # Identified complexes
-final_complexes <- filter(network_df, network_df$Source != "Histone") %>% filter(Complex != "No ID") %>% drop_na() %>% distinct()
+final_complexes <- filter(vertices_df, vertices_df$Source != "Histone") %>% filter(Complex != "No ID") %>% drop_na() %>% distinct()
 final_complex_list <- unique(final_complexes$Complex)
 
 cat(paste("**Networked Complexes:** ", paste(final_complex_list, collapse = ", ")))
@@ -746,4 +618,64 @@ final_func <- filter(genes, genes$`HGNC approved symbol` %in% final_proteins) %>
 knitr::kable(final_func)
 ```
 
-Separate it out by complex, use table, then make graph manually
+## 5.2 Python visualization
+Finally, we create an interactive network using Python via the `reticulate` package. This allows a dynamic visualization that can be refined and filtered to generate different views.
+
+```{r py-import}
+vertices_df$Shapes <- case_when(vertices_df$Diff == "Up" ~ "triangle",
+                             vertices_df$Diff == "Down" ~ "triangleDown",
+                          vertices_df$Diff == "0" ~ "ellipse")
+
+vertices_df$Colors <- PTM_colors[match(vertices_df$PTM, names(PTM_colors))]
+
+vertices_df$Colors <- case_when(
+  vertices_df$Source == "Histone" & is.na(vertices_df$Colors) ~ "gray",
+  vertices_df$Source == "Histone" & !is.na(vertices_df$Colors) ~ vertices_df$Colors,
+  vertices_df$Source == "Total" ~ "red",
+  vertices_df$Source == "Phospho" ~ "blue")
+
+sig_network_py <- filter(vertices_df, Complex != "No ID" | Source == "Histone") %>% r_to_py()
+
+edges_py <- filter(edges_df, Complex != "No ID" | Source == "Histone") %>% r_to_py()
+```
+
+```{python py-setup}
+import pandas as pd, networkx as nx
+from pyvis.network import Network
+```
+
+```{python py-network}
+# Create NetworkX graph object
+G = nx.Graph()
+
+# Generate a nested dictionary/tuple with the node of interest ("Symbol") and 
+# the relevant attributes (shape and complex)
+node_list = []
+for i, row in r.sig_network_py.iterrows():
+  node_list.append((row["Symbol"], {"color": row.Colors, "Complex": row.Complex, "shape": row.Shapes}))
+G.add_nodes_from(node_list)
+
+# Generate a tuple for edges connecting proteins with PTMs
+edge_tup = []
+for i in range(len(r.edges_py["Symbol"])):
+  edge_tup.append((r.edges_py["Symbol"][i], r.edges_py["PTM"][i]))
+G.add_edges_from(edge_tup)
+
+# Remove self-loops
+G.remove_edges_from(nx.selfloop_edges(G))
+
+# Now remove nodes without edges
+lone_nodes = [node for node, degree in G.degree() if degree == 0]
+G.remove_nodes_from(lone_nodes)
+```
+
+```{python py-network-graph}
+# To change the parameters of what's being graphed, adjust the initial call to Network()
+net = Network(height="900px", notebook = True, select_menu = True, cdn_resources = "in_line")
+net.from_nx(G)
+net.save_graph("networkx-pyvis.html")
+```
+
+```{r print-HTML}
+htmltools::renderDocument(htmltools::htmlTemplate("networkx-pyvis.html"))
+```
