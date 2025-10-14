@@ -1,7 +1,8 @@
 ---
 title: "BCG case"
+bibliography: "references.bib"
 ---
-This pipeline is intended for use with three levels of proteomics data: total proteome, phosphoproteome, and histone proteome. See @Schaefer2024 for more detail on the total and histone proteome; phosphoproteome data is from @choudhary2020. Total and phosphoproteome data are designed to be input as an Excel sheet from Proteome Discoverer, and the histone data are the aggregated ratios from EpiProfile (@Yuan2018).
+This pipeline is intended for use with three levels of proteomics data: total proteome, phosphoproteome, and histone proteome. See @Schaefer2024 for more detail on the total and histone proteome; phosphoproteome data is from @Choudhary2020. Total and phosphoproteome data are designed to be input as an Excel sheet from Proteome Discoverer, and the histone data are the aggregated ratios from EpiProfile (@Yuan2018).
 
 For the reader, code chunks are collapsible in-text. The full R Markdown source document can also be downloaded from this page by clicking the “Code” dropdown above. Additionally, we have made available the files generated from our data at the project repository on Github. Other files can be downloaded from their respective sources.
 
@@ -13,18 +14,42 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, include = FALSE}
+if (!requireNamespace('BiocManager', quietly = TRUE)) {
+    install.packages('BiocManager')
+}
+require('BiocManager')
+
 library(MPOInt)
-library(dplyr)
-library(clusterProfiler)
-library(enrichplot)
-library(stringr)
-library(tibble)
+# Install from CRAN if necessary
+CRAN_pkgs <- c("dplyr", "stringr", "tibble", "ggvenn", "devtools",
+               "reticulate", "igraph", "tidyr", "BiocManager",
+               "ggrepel", "scales", "paletteer")
+package.check <- sapply(
+  CRAN_pkgs,
+  FUN = function(x) {
+    if (!requireNamespace(x, quietly = TRUE)) {
+      install.packages(x, dependencies = TRUE)
+      }
+    library(x, character.only = TRUE)
+  }
+)
+
+Bioc_pkgs <- c("clusterProfiler", "enrichplot")
+package.check <- sapply(
+  Bioc_pkgs,
+  FUN = function(x) {
+    if (!requireNamespace(x, quietly = TRUE)) {
+      BiocManager::install(x, dependencies = TRUE)
+      }
+    library(x, character.only = TRUE)
+  }
+)
+
+install_gitlab("medbio/disgenet2r", quiet = TRUE)
 library(disgenet2r)
-library(ggvenn)
-library(reticulate)
-library(igraph)
-library(tidyr)
-library(ggrepel)
+
+library(MPOInt)
+remove(Bioc_pkgs, CRAN_pkgs, package.check)
 ```
 
 Most variables that need to be adjusted for individual datasets should be set here.

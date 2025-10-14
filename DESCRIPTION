@@ -20,3 +20,6 @@ Imports:
     tidyr
 URL: https://github.com/zoe-schaefer/MPOInt, https://zoe-schaefer.github.io/MPOInt/
 BugReports: https://github.com/zoe-schaefer/MPOInt/issues
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
