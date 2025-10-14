@@ -22,19 +22,17 @@ jobs:
     - name: Set up R
       uses: r-lib/actions/setup-r@v2
 
-     # Install igraph
-    - name: Install igraph package
-      run: Rscript -e 'install.packages("igraph", repos="https://cran.rstudio.com")'
-    - name: Install igraph system dependencies
+    - name: Install system dependencies for igraph
       run: |
         sudo apt-get update
-         sudo apt-get install -y libxml2-dev libgmp-dev libglpk-dev
+        sudo apt-get install -y libxml2-dev libssl-dev libcurl4-openssl-dev build-essential
 
-    - name: Remove R package cache
+    - name: Remove cached R libraries
       run: rm -rf /home/runner/work/_temp/Library/igraph
 
-    - name: Install igraph R package
-      run: Rscript -e 'install.packages("igraph", repos="https://cran.rstudio.com")'
+    - name: Install igraph
+      run: Rscript -e "install.packages('igraph', repos='https://cran.rstudio.com/')"
+
   pkgdown:
     runs-on: ubuntu-latest
     # Only restrict concurrency for non-PR jobs
@@ -59,7 +57,7 @@ jobs:
           needs: website
 
       - name: Build site
-        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
+        run: pkgdown::build_site_github_pages(new_process = FALSE, install = TRUE)
         shell: Rscript {0}
 
       - name: Deploy to GitHub pages 🚀
