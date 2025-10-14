@@ -73,6 +73,10 @@ jobs:
 
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = TRUE)
+        env:
+          _R_CHECK_PACKAGE_VIGNETTES_: "true"
+          _R_BUILD_VIGNETTES_: "true"
+          R_MARKDOWN_VERBOSE: "1"
         shell: Rscript {0}
 
       - name: Deploy to GitHub pages 🚀
