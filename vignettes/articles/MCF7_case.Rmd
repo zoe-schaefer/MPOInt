@@ -7,6 +7,8 @@ This pipeline is intended for use with three levels of proteomics data: total pr
 For the reader, code chunks are collapsible in-text. The full R Markdown source document can also be downloaded from this page by clicking the “Code” dropdown above. Additionally, we have made available the files generated from our data at the project repository on Github. Other files can be downloaded from their respective sources.
 
 ```{r knit, include = FALSE}
+library(knitr)
+library(rmarkdown)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
