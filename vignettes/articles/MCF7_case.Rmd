@@ -83,14 +83,14 @@ histone_FC_threshold <- 0.5
 
 If you have not previously set up the `disgenet2r` package, run this chunk with your API key.
 
-```{r d2r-setup, eval = FALSE}
-api_key <- "#####"
+```{r d2r-setup}
+#api_key <- "#####"
 Sys.setenv(DISGENET_API_KEY= api_key)
 ```
 
 If you have not previously set up a Python environment from RStudio, run this chunk.
 
-```{r python-1st-setup, eval = FALSE}
+```{r python-1st-setup}
 virtualenv_create("r-reticulate")
 use_virtualenv("r-reticulate")
 virtualenv_install("r-reticulate", c("pandas", "networkx", "pyvis"), action = "add")
