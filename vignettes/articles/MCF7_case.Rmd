@@ -19,13 +19,13 @@ knitr::opts_chunk$set(
 if (!requireNamespace('BiocManager', quietly = TRUE)) {
     install.packages('BiocManager')
 }
-require('BiocManager')
+library('BiocManager')
 
 library(MPOInt)
 # Install from CRAN if necessary
 CRAN_pkgs <- c("dplyr", "stringr", "tibble", "ggvenn", "devtools",
                "reticulate", "igraph", "tidyr", "BiocManager",
-               "ggrepel", "scales", "paletteer")
+               "ggrepel", "scales", "paletteer", "htmltools")
 package.check <- sapply(
   CRAN_pkgs,
   FUN = function(x) {
@@ -36,7 +36,9 @@ package.check <- sapply(
   }
 )
 
-Bioc_pkgs <- c("clusterProfiler", "enrichplot")
+# Install from Bioconductor if necessary
+Bioc_pkgs <- c("clusterProfiler", "enrichplot",
+               "OrganismDbi", "Homo.sapiens")
 package.check <- sapply(
   Bioc_pkgs,
   FUN = function(x) {
@@ -47,11 +49,24 @@ package.check <- sapply(
   }
 )
 
-install_gitlab("medbio/disgenet2r", quiet = TRUE)
-library(disgenet2r)
+# Install from GitLab if necessary
+if (!requireNamespace("disgenet2r", quietly = TRUE)) {
+  tryCatch(
+    {
+      install_gitlab("medbio/disgenet2r", quiet = TRUE)
+    },
+    error = function(e) {
+      warning("Failed to install 'disgenet2r' from GitLab: ", conditionMessage(e))
+    }
+  )
+}
+if (requireNamespace("disgenet2r", quietly = TRUE)) {
+  library(disgenet2r)
+} else {
+  warning("'disgenet2r' package is not available. Some functionality may be limited.")
+}
 
 library(MPOInt)
-
 remove(Bioc_pkgs, CRAN_pkgs, package.check)
 ```
 
