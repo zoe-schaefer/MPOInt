@@ -13,6 +13,20 @@ name: pkgdown.yaml
 permissions: read-all
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install igraph system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libgmp-dev libglpk-dev
+
+      - name: Remove R package cache
+        run: rm -rf /home/runner/work/_temp/Library/igraph
+
+      - name: Install igraph R package
+        run: Rscript -e 'install.packages("igraph", repos="https://cran.rstudio.com")'
+      # ... your other steps ...
   pkgdown:
     runs-on: ubuntu-latest
     # Only restrict concurrency for non-PR jobs
