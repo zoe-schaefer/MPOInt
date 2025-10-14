@@ -8,5 +8,5 @@ You can install the development version of MPOInt from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("jane/somepackage")
+devtools::install_github("zoe-schaefer/MPOInt")
 ```
