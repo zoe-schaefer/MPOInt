@@ -85,7 +85,7 @@ If you have not previously set up the `disgenet2r` package, run this chunk with 
 
 ```{r d2r-setup}
 #api_key <- "#####"
-Sys.setenv(DISGENET_API_KEY= api_key)
+DISGENET_API_KEY <- Sys.getenv(api_key)
 ```
 
 If you have not previously set up a Python environment from RStudio, run this chunk.
