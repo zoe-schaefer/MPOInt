@@ -73,7 +73,7 @@ jobs:
         run: Rscript -e "install.packages('igraph', type = 'source')"
 
       - name: Build site
-        run: pkgdown::build_site_github_pages(new_process = FALSE, install = TRUE, verbose = TRUE)
+        run: pkgdown::build_site_github_pages(new_process = FALSE, install = TRUE)
         env:
           _R_CHECK_PACKAGE_VIGNETTES_: "true"
           _R_BUILD_VIGNETTES_: "true"
