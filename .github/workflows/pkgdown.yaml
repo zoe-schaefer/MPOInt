@@ -30,15 +30,12 @@ jobs:
     - name: Remove cached R libraries
       run: rm -rf /home/runner/work/_temp/Library/igraph
 
-    - name: Install igraph
-      run: Rscript -e "install.packages('igraph', repos='https://cran.rstudio.com/')"
-
     - name: Set up API key
-      run: echo "DISGENET_API_KEY=${{ secrets.DISGENET_API_KEY }}" >> $GITHUB_ENV
-      
+      run: echo "api_key=${{ secrets.API_KEY }}" >> $GITHUB_ENV
+
     - name: Update igraph and BH
       run: Rscript -e "install.packages(c('igraph', 'BH'), repos='https://cran.rstudio.com/')"
-    
+
   pkgdown:
     runs-on: ubuntu-latest
     # Only restrict concurrency for non-PR jobs
@@ -46,6 +43,7 @@ jobs:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      api_key: ${{ secrets.API_KEY}}
     permissions:
       contents: write
     steps:
@@ -67,15 +65,15 @@ jobs:
         with:
           extra-packages: any::pkgdown, local::.
           needs: website
-          
+
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libxml2-dev libglpk-dev libgmp-dev
-      
+
       - name: Reinstall igraph
         run: Rscript -e "install.packages('igraph', type = 'source')"
 
       - name: Build site
-        run: pkgdown::build_site_github_pages(new_process = FALSE, install = TRUE)
+        run: pkgdown::build_site_github_pages(new_process = FALSE, install = TRUE, verbose = TRUE)
         env:
           _R_CHECK_PACKAGE_VIGNETTES_: "true"
           _R_BUILD_VIGNETTES_: "true"
