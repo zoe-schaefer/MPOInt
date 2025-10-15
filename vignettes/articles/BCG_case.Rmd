@@ -82,8 +82,12 @@ histone_FC_threshold <- 0.5
 If you have not previously set up the `disgenet2r` package, run this chunk with your API key.
 
 ```{r d2r-setup}
-#api_key <- "#####"
-Sys.setenv(DISGENET_API_KEY= api_key)
+#DISGENET_API_KEY <- "#####"
+# Below line is for example purposes - make sure to use your own API key above and comment the next line out or delete it
+get_api_key <- Sys.getenv("api_key")
+
+# Keep the next line to create an environment variable with the correct API key
+Sys.setenv(DISGENET_API_KEY = get_api_key)
 ```
 
 If you have not previously set up a Python environment from RStudio, run this chunk.
