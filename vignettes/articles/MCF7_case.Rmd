@@ -23,9 +23,9 @@ library('BiocManager')
 
 library(MPOInt)
 # Install from CRAN if necessary
-CRAN_pkgs <- c("dplyr", "stringr", "tibble", "ggvenn", "devtools",
+CRAN_pkgs <- c("stringr", "tibble", "ggvenn", "devtools",
                "reticulate", "igraph", "tidyr", "BiocManager",
-               "ggrepel", "scales", "paletteer", "htmltools")
+               "ggrepel", "scales", "paletteer", "htmltools", "dplyr")
 package.check <- sapply(
   CRAN_pkgs,
   FUN = function(x) {
@@ -38,7 +38,7 @@ package.check <- sapply(
 
 # Install from Bioconductor if necessary
 Bioc_pkgs <- c("clusterProfiler", "enrichplot",
-               "OrganismDbi", "Homo.sapiens")
+               "OrganismDbi", "Homo.sapiens", "msigdbr")
 package.check <- sapply(
   Bioc_pkgs,
   FUN = function(x) {
@@ -83,7 +83,7 @@ histone_FC_threshold <- 0.5
 
 If you have not previously set up the `disgenet2r` package, run this chunk with your API key.
 
-```{r d2r-setup}
+```{r d2r-setup, eval = FALSE}
 #DISGENET_API_KEY <- "#####"
 # Below line is for example purposes - make sure to use your own API key above and comment the next line out or delete it
 get_api_key <- Sys.getenv("api_key")
@@ -370,19 +370,26 @@ rm(MCF7_histones, histone_frag, histone_frag_raw, histone_p,
    histone_single_unmod, single_p)
 ```
 
+# 3.5 test
+```{r}
+GDA_ERBC <- msigdbr(collection = "C2") %>% filter(gs_id == "M18299")
+GDA_HT <- msigdbr(collection = "C5") %>% filter(gs_exact_source == "HP:0000822")
+GDA_OvCa <- msigdbr(collection = "C5") %>% filter(gs_exact_source == "HP:0100615")
+```
+
 # 4. Disease enrichment
 Here we perform disease enrichment using the DisGeNET database. We first search for a list of Concept Unique Identifiers (CUIs) that identify a specific disease of interest. If a CUI is already known, that can be used in the following chunks.
 
-```{r GDA-CUI-fetch}
+```{r GDA-CUI-fetch, eval = FALSE}
 GDA_table_BC <- get_umls_from_vocabulary(disease = "breast cancer",  vocabulary = "NAME" ,  limit = 10)@qresult
 knitr::kable(GDA_table_BC, caption = "List of CUIs that map to breast cancer", row.names = F)  
 ```
 
 We enrich our primary disease of interest (breast cancer), but also include enrichment for hypertension and ovarian cancer.
 
-```{r GDA-setup}
+```{r GDA-setup, eval = FALSE}
 GDA_ERBC <- disease2gene(disease = "UMLS_C0678222", database = "CURATED")@qresult
-GDA_PAH <- disease2gene(disease = "UMLS_C2973725", database = "CURATED")@qresult
+GDA_HT <- disease2gene(disease = "UMLS_C2973725", database = "CURATED")@qresult
 GDA_OvCa <- disease2gene(disease = "UMLS_C0677886", database = "CURATED")@qresult
 ```
 
@@ -404,7 +411,7 @@ ggvenn(list(
   plot.title = element_text(hjust = 0.5))
 
 ggvenn(list(
-  "Hypertension" = GDA_PAH$gene_symbol,
+  "Hypertension" = GDA_HT$gene_symbol,
   "Total proteome" = total_FC$SYMBOL2,
   "Phosphoproteome" = phospho_FC$SYMBOL2),
   fill_color = c("#440154", "#21908C", "#FDE725"),
@@ -434,7 +441,7 @@ cat(paste("**Disease/Phospho/Total:** ", paste(intersect(intersect(GDA_ERBC$gene
 
 ```{r clear-4}
 # Clearing large variables
-rm(GDA_ERBC, GDA_PAH, GDA_OvCa, GDA_table_BC)
+rm(GDA_ERBC, GDA_HT, GDA_OvCa, GDA_table_BC)
 ```
 
 
@@ -563,7 +570,7 @@ vertices_df$Complex <- case_when(vertices_df$Complex == "#" ~ "No ID",
 # Creating a dataframe connecting edges (source and target vertices)
 complex_vertices <- data.frame(vertices = c(unique(genes_histone_joined$Symbol), unique(genes_histone_joined$PTM)))
 edges_df <- full_join(genes_histone_joined, complex_df, by = join_by("Complex" == "complexes")) %>% relocate(c("Symbol", "PTM"))
-edges_df <- left_join(complex_vertices, edges_df, by = join_by("vertices" == "Symbol")) %>% rename("Symbol" = "vertices")
+edges_df <- left_join(complex_vertices, edges_df, by = join_by("vertices" == "Symbol")) %>% rename("vertices" = "Symbol")
 
 edges_df$Symbol <- case_when(is.na(edges_df$Symbol) ~ edges_df$PTM,
                                .default = edges_df$Symbol)
@@ -627,7 +634,7 @@ knitr::kable(final_members)
 
 ```{r complex-PTMs}
 # Differential PTMs
-final_PTMs <- distinct(final_complexes, pick(PTM, Diff)) %>% rename("Differential expression" = "Diff")
+final_PTMs <- distinct(final_complexes, pick(PTM, Diff)) %>% rename("Diff" = "Differential expression")
 knitr::kable(final_PTMs)
 ```
 
@@ -635,7 +642,7 @@ knitr::kable(final_PTMs)
 ```{r complex-genes}
 # Genes
 final_proteins <- unique(final_complexes$Symbol)
-final_func <- filter(genes, genes$`HGNC approved symbol` %in% final_proteins) %>% select(!c("UniProt ID (human)"))
+final_func <- filter(genes, genes$`HGNC approved symbol` %in% final_proteins) %>% dplyr::select(!c("UniProt ID (human)"))
 knitr::kable(final_func)
 ```
 
@@ -694,9 +701,9 @@ G.remove_nodes_from(lone_nodes)
 # To change the parameters of what's being graphed, adjust the initial call to Network()
 net = Network(height="900px", notebook = True, select_menu = True, cdn_resources = "in_line")
 net.from_nx(G)
-net.save_graph("networkx-pyvis.html")
+net.save_graph("networkx-pyvis-MCF.html")
 ```
 
 ```{r print-HTML}
-htmltools::renderDocument(htmltools::htmlTemplate("networkx-pyvis.html"))
+htmltools::renderDocument(htmltools::htmlTemplate("networkx-pyvis-MCF.html"))
 ```

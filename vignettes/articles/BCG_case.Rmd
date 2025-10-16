@@ -21,9 +21,9 @@ library('BiocManager')
 
 library(MPOInt)
 # Install from CRAN if necessary
-CRAN_pkgs <- c("dplyr", "stringr", "tibble", "ggvenn", "devtools",
+CRAN_pkgs <- c("stringr", "tibble", "ggvenn", "devtools",
                "reticulate", "igraph", "tidyr", "BiocManager",
-               "ggrepel", "scales", "paletteer", "htmltools")
+               "ggrepel", "scales", "paletteer", "htmltools", "dplyr")
 package.check <- sapply(
   CRAN_pkgs,
   FUN = function(x) {
@@ -36,7 +36,7 @@ package.check <- sapply(
 
 # Install from Bioconductor if necessary
 Bioc_pkgs <- c("clusterProfiler", "enrichplot",
-               "OrganismDbi", "Homo.sapiens")
+               "OrganismDbi", "Homo.sapiens", "msigdbr")
 package.check <- sapply(
   Bioc_pkgs,
   FUN = function(x) {
@@ -81,13 +81,13 @@ histone_FC_threshold <- 0.5
 
 If you have not previously set up the `disgenet2r` package, run this chunk with your API key.
 
-```{r d2r-setup}
+```{r d2r-setup, eval = FALSE}
 #DISGENET_API_KEY <- "#####"
 # Below line is for example purposes - make sure to use your own API key above and comment the next line out or delete it
-get_api_key <- Sys.getenv("api_key")
+#get_api_key <- Sys.getenv("api_key")
  
 # Keep the next line to create an environment variable with the correct API key
-Sys.setenv(DISGENET_API_KEY = get_api_key)
+Sys.setenv(DISGENET_API_KEY = api_key)
 ```
 
 If you have not previously set up a Python environment from RStudio, run this chunk.
@@ -455,17 +455,25 @@ rm(THP1_histones, histone_frag, histone_frag_raw, histone_p,
    histone_single_unmod, single_p)
 ```
 
+# 3.5 test
+```{r}
+GDA_BlCa <- msigdbr(collection = "C2") %>% filter(gs_exact_source == "WP2828")
+GDA_melanoma <- msigdbr(collection = "C5") %>% filter(gs_exact_source == "HP:0002861")
+GDA_RSV <- msigdbr(collection = "C2") %>% filter(gs_exact_source == "R-HSA-9833110")
+```
+
+
 # 4. Disease enrichment
 Here we perform disease enrichment using the DisGeNET database. We first search for a list of Concept Unique Identifiers (CUIs) that identify a specific disease of interest. If a CUI is already known, that can be used in the following chunks.
 
-```{r GDA-CUI-fetch}
-GDA_table_BlCa <- get_umls_from_vocabulary(disease = "bladder cancer",  vocabulary = "NAME" ,  limit = 10)@qresult
+```{r GDA-CUI-fetch, eval = FALSE}
+GDA_table_BlCa <- get_umls_from_vocabulary(api_key = DISGENET_API_KEY, disease = "bladder cancer",  vocabulary = "NAME" ,  limit = 10)@qresult
 knitr::kable(GDA_table_BlCa, caption = "List of CUIs that map to bladder cancer", row.names = F) 
 ```
 
 We enrich our primary disease of interest (bladder cancer), but also include enrichment for melanoma and RSV, two potential areas of BCG application.
 
-```{r GDA-setup}
+```{r GDA-setup, eval = FALSE}
 GDA_BlCa <- disease2gene(disease = "UMLS_C0005684", database = "CURATED")@qresult
 GDA_melanoma <- disease2gene(disease = "UMLS_C0025202", database = "CURATED")@qresult
 GDA_RSV <- disease2gene(disease = "UMLS_C0035235", database = "CURATED")@qresult
@@ -649,7 +657,7 @@ vertices_df$Complex <- case_when(vertices_df$Complex == "#" ~ "No ID",
 # Creating a dataframe connecting edges (source and target vertices)
 complex_vertices <- data.frame(vertices = c(unique(genes_histone_joined$Symbol), unique(genes_histone_joined$PTM)))
 edges_df <- full_join(genes_histone_joined, complex_df, by = join_by("Complex" == "complexes")) %>% relocate(c("Symbol", "PTM"))
-edges_df <- left_join(complex_vertices, edges_df, by = join_by("vertices" == "Symbol")) %>% rename("Symbol" = "vertices")
+edges_df <- left_join(complex_vertices, edges_df, by = join_by("vertices" == "Symbol")) %>% rename("vertices" = "Symbol")
 
 edges_df$Symbol <- case_when(is.na(edges_df$Symbol) ~ edges_df$PTM,
                                .default = edges_df$Symbol)
@@ -706,7 +714,7 @@ knitr::kable(final_members)
 
 ```{r complex-PTMs}
 # Differential PTMs
-final_PTMs <- distinct(final_complexes, pick(PTM, Diff)) %>% rename("Differential expression" = "Diff")
+final_PTMs <- distinct(final_complexes, pick(PTM, Diff)) %>% rename("Diff" = "Differential expression")
 knitr::kable(final_PTMs)
 ```
 
@@ -714,7 +722,7 @@ knitr::kable(final_PTMs)
 ```{r complex-genes}
 # Genes
 final_proteins <- unique(final_complexes$Symbol)
-final_func <- filter(genes, genes$`HGNC approved symbol` %in% final_proteins) %>% select(!c("UniProt ID (human)"))
+final_func <- filter(genes, genes$`HGNC approved symbol` %in% final_proteins) %>% dplyr::select(!c("UniProt ID (human)"))
 knitr::kable(final_func)
 ```
 
