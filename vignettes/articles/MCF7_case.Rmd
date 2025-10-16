@@ -4,7 +4,7 @@ bibliography: "references.bib"
 ---
 This pipeline is intended for use with three levels of proteomics data: total proteome, phosphoproteome, and histone proteome. Total and phosphoproteome data are sourced from @Han2024. Total and phosphoproteome data are designed to be input as an Excel sheet from MaxQuant, and the histone data are derived from @LeRoy2013.
 
-For the reader, code chunks are collapsible in-text. The full R Markdown source document can also be downloaded from this page by clicking the “Code” dropdown above. Additionally, we have made available the files generated from our data at the project repository on Github. Other files can be downloaded from their respective sources.
+The full R Markdown source document can be downloaded from this page by clicking the Source link above. Additionally, we have made available the files generated from our data at the project repository on Github. Other files can be downloaded from their respective sources.
 
 ```{r knit, include = FALSE}
 library(knitr)
@@ -21,11 +21,10 @@ if (!requireNamespace('BiocManager', quietly = TRUE)) {
 }
 library('BiocManager')
 
-library(MPOInt)
 # Install from CRAN if necessary
-CRAN_pkgs <- c("dplyr", "stringr", "tibble", "ggvenn", "devtools",
+CRAN_pkgs <- c("stringr", "tibble", "ggvenn", "devtools",
                "reticulate", "igraph", "tidyr", "BiocManager",
-               "ggrepel", "scales", "paletteer", "htmltools")
+               "ggrepel", "scales", "htmltools", "dplyr")
 package.check <- sapply(
   CRAN_pkgs,
   FUN = function(x) {
@@ -38,7 +37,7 @@ package.check <- sapply(
 
 # Install from Bioconductor if necessary
 Bioc_pkgs <- c("clusterProfiler", "enrichplot",
-               "OrganismDbi", "Homo.sapiens")
+               "OrganismDbi", "Homo.sapiens", "msigdbr")
 package.check <- sapply(
   Bioc_pkgs,
   FUN = function(x) {
@@ -48,23 +47,6 @@ package.check <- sapply(
     library(x, character.only = TRUE)
   }
 )
-
-# Install from GitLab if necessary
-if (!requireNamespace("disgenet2r", quietly = TRUE)) {
-  tryCatch(
-    {
-      install_gitlab("medbio/disgenet2r", quiet = TRUE)
-    },
-    error = function(e) {
-      warning("Failed to install 'disgenet2r' from GitLab: ", conditionMessage(e))
-    }
-  )
-}
-if (requireNamespace("disgenet2r", quietly = TRUE)) {
-  library(disgenet2r)
-} else {
-  warning("'disgenet2r' package is not available. Some functionality may be limited.")
-}
 
 library(MPOInt)
 remove(Bioc_pkgs, CRAN_pkgs, package.check)
@@ -79,17 +61,6 @@ phospho_p_threshold <- 0.05
 phospho_FC_threshold <- 0.5
 histone_p_threshold <- 0.05
 histone_FC_threshold <- 0.5
-```
-
-If you have not previously set up the `disgenet2r` package, run this chunk with your API key.
-
-```{r d2r-setup}
-#DISGENET_API_KEY <- "#####"
-# Below line is for example purposes - make sure to use your own API key above and comment the next line out or delete it
-get_api_key <- Sys.getenv("api_key")
- 
-# Keep the next line to create an environment variable with the correct API key
-Sys.setenv(DISGENET_API_KEY = get_api_key)
 ```
 
 If you have not previously set up a Python environment from RStudio, run this chunk.
@@ -371,19 +342,14 @@ rm(MCF7_histones, histone_frag, histone_frag_raw, histone_p,
 ```
 
 # 4. Disease enrichment
-Here we perform disease enrichment using the DisGeNET database. We first search for a list of Concept Unique Identifiers (CUIs) that identify a specific disease of interest. If a CUI is already known, that can be used in the following chunks.
-
-```{r GDA-CUI-fetch}
-GDA_table_BC <- get_umls_from_vocabulary(disease = "breast cancer",  vocabulary = "NAME" ,  limit = 10)@qresult
-knitr::kable(GDA_table_BC, caption = "List of CUIs that map to breast cancer", row.names = F)  
-```
+Here we perform disease enrichment using the [MSigDB database](https://www.gsea-msigdb.org/gsea/msigdb/human/genesets.jsp) and the MSigDBR package. First, identify a dataset of interest in the database. The next chunk shows databases sourced through MSigDB but originating from PubMed and Human Phenotype Ontology. The `collection` parameter identifies the MSigDB collection to search, followed by `gs_exact_source` that specifies the selected dataset. This can also be replaced with `gs_id` if you are using the "Systematic name" value on the website.
 
 We enrich our primary disease of interest (breast cancer), but also include enrichment for hypertension and ovarian cancer.
 
 ```{r GDA-setup}
-GDA_ERBC <- disease2gene(disease = "UMLS_C0678222", database = "CURATED")@qresult
-GDA_PAH <- disease2gene(disease = "UMLS_C2973725", database = "CURATED")@qresult
-GDA_OvCa <- disease2gene(disease = "UMLS_C0677886", database = "CURATED")@qresult
+GDA_ERBC <- msigdbr(collection = "C2") %>% filter(gs_id == "M18299")
+GDA_HT <- msigdbr(collection = "C5") %>% filter(gs_exact_source == "HP:0000822")
+GDA_OvCa <- msigdbr(collection = "C5") %>% filter(gs_exact_source == "HP:0100615")
 ```
 
 This chunk creates Venn diagrams of the overlap between proteins that were significant and above the fold change threshold in the total and phosphoproteome, as well as the genes of interest that were just retrieved.
@@ -404,7 +370,7 @@ ggvenn(list(
   plot.title = element_text(hjust = 0.5))
 
 ggvenn(list(
-  "Hypertension" = GDA_PAH$gene_symbol,
+  "Hypertension" = GDA_HT$gene_symbol,
   "Total proteome" = total_FC$SYMBOL2,
   "Phosphoproteome" = phospho_FC$SYMBOL2),
   fill_color = c("#440154", "#21908C", "#FDE725"),
@@ -426,15 +392,28 @@ We next print a list of proteins in the four intersecting areas for further inve
 
 ```{r GDA-list, results = "asis"}
 # Print the list of proteins in each intersection
-cat(paste("**Disease/Phospho:** ", paste(intersect(GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2), collapse = ", ")))
-cat(paste("**Disease/Total:** ", paste(intersect(GDA_ERBC$gene_symbol, total_FC$SYMBOL2), collapse = ", ")))
-cat(paste("**Total/Phospho:** ", paste(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2), collapse = ", ")))
-cat(paste("**Disease/Phospho/Total:** ", paste(intersect(intersect(GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2), collapse = ", ")))
+cat(paste("**ER breast cancer/Phospho:** ", paste(sort(intersect(GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**ER breast cancer/Total:** ", paste(sort(intersect(GDA_ERBC$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Total/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**ER breast cancer/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
 ```
 
+```{r GDA-list-HT, results = "asis", collapse = TRUE}
+cat(paste("**Hypertension/Phospho:** ", paste(sort(intersect(GDA_HT$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Hypertension/Total:** ", paste(sort(intersect(GDA_HT$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Total/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Hypertension/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_HT$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
+```
+
+```{r GDA-list-OvCa, results = "asis", collapse = TRUE}
+cat(paste("**Ovarian cancer/Phospho:** ", paste(sort(intersect(GDA_OvCa$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Ovarian cancer/Total:** ", paste(sort(intersect(GDA_OvCa$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Total/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Ovarian cancer/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_OvCa$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
+```
 ```{r clear-4}
 # Clearing large variables
-rm(GDA_ERBC, GDA_PAH, GDA_OvCa, GDA_table_BC)
+rm(GDA_ERBC, GDA_HT, GDA_OvCa)
 ```
 
 
@@ -563,7 +542,7 @@ vertices_df$Complex <- case_when(vertices_df$Complex == "#" ~ "No ID",
 # Creating a dataframe connecting edges (source and target vertices)
 complex_vertices <- data.frame(vertices = c(unique(genes_histone_joined$Symbol), unique(genes_histone_joined$PTM)))
 edges_df <- full_join(genes_histone_joined, complex_df, by = join_by("Complex" == "complexes")) %>% relocate(c("Symbol", "PTM"))
-edges_df <- left_join(complex_vertices, edges_df, by = join_by("vertices" == "Symbol")) %>% rename("Symbol" = "vertices")
+edges_df <- left_join(complex_vertices, edges_df, by = join_by("vertices" == "Symbol")) %>% dplyr::rename("Symbol" = "vertices")
 
 edges_df$Symbol <- case_when(is.na(edges_df$Symbol) ~ edges_df$PTM,
                                .default = edges_df$Symbol)
@@ -585,19 +564,13 @@ sig_network <- distinct(group_by(filter(edges_df, Complex != "No ID"), Complex),
 sig_network["weight"] <- 1
 sig_network$Complex <- factor(sig_network$Complex, levels = unique(as.character(sig_network$Complex)))
 
-PTM_colors <- setNames(c(paletteer_d("ggsci::default_igv", n = length(unique(histone_df$PTM)))), unique(histone_df$PTM))
-
-#paletteer_d("ggsci::default_igv") 
-
-#PTM_colors <- setNames(qualitative_hcl("Dark 3", rev = TRUE, n = length(unique(histone_df$PTM))), unique(histone_df$PTM))
-
 ggplot(sig_network, aes(x = Complex, y = Symbol, fill = PTM)) +
-  geom_bin_2d() +
+  geom_bin_2d(binwidth = 1, center = 0) +
   theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1),
         axis.title.x = element_blank(), axis.title.y = element_blank()) +
-  scale_fill_manual(values = PTM_colors) +
+  scale_fill_viridis_d() +
   scale_y_discrete(limits = rev) +
-  labs(title = "Figure 7d: Network bins")
+  labs(title = "Network bins")
 ```
 
 ## 5.1 Complex and member identification
@@ -606,7 +579,7 @@ For future research use, we generate multiple tables containing the identified c
 ```{r complex-list, results = "asis"}
 # Identified complexes
 final_complexes <- filter(vertices_df, vertices_df$Source != "Histone") %>% filter(Complex != "No ID") %>% drop_na() %>% distinct()
-final_complex_list <- unique(final_complexes$Complex)
+final_complex_list <- sort(unique(final_complexes$Complex))
 
 cat(paste("**Networked Complexes:** ", paste(final_complex_list, collapse = ", ")))
 ```
@@ -627,7 +600,7 @@ knitr::kable(final_members)
 
 ```{r complex-PTMs}
 # Differential PTMs
-final_PTMs <- distinct(final_complexes, pick(PTM, Diff)) %>% rename("Differential expression" = "Diff")
+final_PTMs <- distinct(final_complexes, pick(PTM, Diff)) %>% dplyr::rename("Differential expression" = "Diff")
 knitr::kable(final_PTMs)
 ```
 
@@ -635,7 +608,7 @@ knitr::kable(final_PTMs)
 ```{r complex-genes}
 # Genes
 final_proteins <- unique(final_complexes$Symbol)
-final_func <- filter(genes, genes$`HGNC approved symbol` %in% final_proteins) %>% select(!c("UniProt ID (human)"))
+final_func <- filter(genes, genes$`HGNC approved symbol` %in% final_proteins) %>% dplyr::select(!c("UniProt ID (human)"))
 knitr::kable(final_func)
 ```
 
@@ -646,14 +619,9 @@ Finally, we create an interactive network using Python via the `reticulate` pack
 vertices_df$Shapes <- case_when(vertices_df$Diff == "Up" ~ "triangle",
                              vertices_df$Diff == "Down" ~ "triangleDown",
                           vertices_df$Diff == "0" ~ "ellipse")
-
-vertices_df$Colors <- PTM_colors[match(vertices_df$PTM, names(PTM_colors))]
-
-vertices_df$Colors <- case_when(
-  vertices_df$Source == "Histone" & is.na(vertices_df$Colors) ~ "gray",
-  vertices_df$Source == "Histone" & !is.na(vertices_df$Colors) ~ vertices_df$Colors,
-  vertices_df$Source == "Total" ~ "red",
-  vertices_df$Source == "Phospho" ~ "blue")
+vertices_df$Colors <- case_when(vertices_df$Source == "Total" ~ "red",
+                          vertices_df$Source == "Phospho" ~ "blue",
+                          vertices_df$Source == "Histone" ~ "gray")
 
 sig_network_py <- filter(vertices_df, Complex != "No ID" | Source == "Histone") %>% r_to_py()
 
@@ -694,9 +662,9 @@ G.remove_nodes_from(lone_nodes)
 # To change the parameters of what's being graphed, adjust the initial call to Network()
 net = Network(height="900px", notebook = True, select_menu = True, cdn_resources = "in_line")
 net.from_nx(G)
-net.save_graph("networkx-pyvis.html")
+net.save_graph("networkx-pyvis-MCF.html")
 ```
 
 ```{r print-HTML}
-htmltools::renderDocument(htmltools::htmlTemplate("networkx-pyvis.html"))
+htmltools::renderDocument(htmltools::htmlTemplate("networkx-pyvis-MCF.html"))
 ```

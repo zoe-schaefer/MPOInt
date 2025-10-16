@@ -4,7 +4,7 @@ bibliography: "references.bib"
 ---
 This pipeline is intended for use with three levels of proteomics data: total proteome, phosphoproteome, and histone proteome. See @Schaefer2024 for more detail on the total and histone proteome; phosphoproteome data is from @Choudhary2020. Total and phosphoproteome data are designed to be input as an Excel sheet from Proteome Discoverer, and the histone data are the aggregated ratios from EpiProfile (@Yuan2018).
 
-For the reader, code chunks are collapsible in-text. The full R Markdown source document can also be downloaded from this page by clicking the “Code” dropdown above. Additionally, we have made available the files generated from our data at the project repository on Github. Other files can be downloaded from their respective sources.
+The full R Markdown source document can be downloaded from this page by clicking the Source link above. Additionally, we have made available the files generated from our data at the project repository on Github. Other files can be downloaded from their respective sources.
 
 ```{r knit, include = FALSE}
 knitr::opts_chunk$set(
@@ -19,11 +19,10 @@ if (!requireNamespace('BiocManager', quietly = TRUE)) {
 }
 library('BiocManager')
 
-library(MPOInt)
 # Install from CRAN if necessary
-CRAN_pkgs <- c("dplyr", "stringr", "tibble", "ggvenn", "devtools",
+CRAN_pkgs <- c("stringr", "tibble", "ggvenn", "devtools",
                "reticulate", "igraph", "tidyr", "BiocManager",
-               "ggrepel", "scales", "paletteer", "htmltools")
+               "ggrepel", "scales", "htmltools", "dplyr")
 package.check <- sapply(
   CRAN_pkgs,
   FUN = function(x) {
@@ -36,7 +35,7 @@ package.check <- sapply(
 
 # Install from Bioconductor if necessary
 Bioc_pkgs <- c("clusterProfiler", "enrichplot",
-               "OrganismDbi", "Homo.sapiens")
+               "OrganismDbi", "Homo.sapiens", "msigdbr")
 package.check <- sapply(
   Bioc_pkgs,
   FUN = function(x) {
@@ -46,23 +45,6 @@ package.check <- sapply(
     library(x, character.only = TRUE)
   }
 )
-
-# Install from GitLab if necessary
-if (!requireNamespace("disgenet2r", quietly = TRUE)) {
-  tryCatch(
-    {
-      install_gitlab("medbio/disgenet2r", quiet = TRUE)
-    },
-    error = function(e) {
-      warning("Failed to install 'disgenet2r' from GitLab: ", conditionMessage(e))
-    }
-  )
-}
-if (requireNamespace("disgenet2r", quietly = TRUE)) {
-  library(disgenet2r)
-} else {
-  warning("'disgenet2r' package is not available. Some functionality may be limited.")
-}
 
 library(MPOInt)
 remove(Bioc_pkgs, CRAN_pkgs, package.check)
@@ -77,17 +59,6 @@ phospho_p_threshold <- 0.05
 phospho_FC_threshold <- 0.5
 histone_p_threshold <- 0.05
 histone_FC_threshold <- 0.5
-```
-
-If you have not previously set up the `disgenet2r` package, run this chunk with your API key.
-
-```{r d2r-setup}
-#DISGENET_API_KEY <- "#####"
-# Below line is for example purposes - make sure to use your own API key above and comment the next line out or delete it
-get_api_key <- Sys.getenv("api_key")
- 
-# Keep the next line to create an environment variable with the correct API key
-Sys.setenv(DISGENET_API_KEY = get_api_key)
 ```
 
 If you have not previously set up a Python environment from RStudio, run this chunk.
@@ -152,7 +123,7 @@ volcano_groups(df = THP1_total, fc_col = "log2(FC)", p_col = "P value", label_co
 ```
 
 ## 1.2. GSEA
-This section prepares and performs a GSEA analysis on the total proteome data.
+This section prepares and performs a GSEA analysis on the total proteome data using the clusterProfiler package.
 
 ```{r total-GSEA-list}
 # Need a named list in decreasing order
@@ -456,22 +427,17 @@ rm(THP1_histones, histone_frag, histone_frag_raw, histone_p,
 ```
 
 # 4. Disease enrichment
-Here we perform disease enrichment using the DisGeNET database. We first search for a list of Concept Unique Identifiers (CUIs) that identify a specific disease of interest. If a CUI is already known, that can be used in the following chunks.
-
-```{r GDA-CUI-fetch}
-GDA_table_BlCa <- get_umls_from_vocabulary(disease = "bladder cancer",  vocabulary = "NAME" ,  limit = 10)@qresult
-knitr::kable(GDA_table_BlCa, caption = "List of CUIs that map to bladder cancer", row.names = F) 
-```
+Here we perform disease enrichment using the [MSigDB database](https://www.gsea-msigdb.org/gsea/msigdb/human/genesets.jsp) and the MSigDBR package. First, identify a dataset of interest in the database. The next chunk shows databases sourced through MSigDB but originating from WikiPathways, Human Phenotype Ontology, and Reactome. The `collection` parameter identifies the MSigDB collection to search, followed by `gs_exact_source` that specifies the selected dataset. This can also be replaced with `gs_id` if you are using the "Systematic name" value on the website.
 
 We enrich our primary disease of interest (bladder cancer), but also include enrichment for melanoma and RSV, two potential areas of BCG application.
 
 ```{r GDA-setup}
-GDA_BlCa <- disease2gene(disease = "UMLS_C0005684", database = "CURATED")@qresult
-GDA_melanoma <- disease2gene(disease = "UMLS_C0025202", database = "CURATED")@qresult
-GDA_RSV <- disease2gene(disease = "UMLS_C0035235", database = "CURATED")@qresult
+GDA_BlCa <- msigdbr(collection = "C2") %>% filter(gs_exact_source == "WP2828")
+GDA_melanoma <- msigdbr(collection = "C5") %>% filter(gs_exact_source == "HP:0002861")
+GDA_RSV <- msigdbr(collection = "C2") %>% filter(gs_exact_source == "R-HSA-9833110")
 ```
 
-This chunk creates Venn diagrams of the overlap between proteins that were significant and above the fold change threshold in the total and phosphoproteome, as well as the genes of interest that were just retrieved.
+This chunk creates Venn diagrams of the overlap between proteins that were significant and above the fold change threshold in the total proteome and phosphoproteome, as well as the genes of interest that were just retrieved.
 
 ```{r GDA, fig.asp = 1}
 # Get lists of proteins that were significant AND above the FC threshold
@@ -511,16 +477,31 @@ We next print a list of proteins in the four intersecting areas for further inve
 
 ```{r GDA-list, results = "asis"}
 # Print the list of proteins in each intersection
-cat(paste("**Disease/Phospho:** ", paste(intersect(GDA_BlCa$gene_symbol, phospho_FC$SYMBOL2), collapse = ", ")))
-cat(paste("**Disease/Total:** ", paste(intersect(GDA_BlCa$gene_symbol, total_FC$SYMBOL2), collapse = ", ")))
-cat(paste("**Total/Phospho:** ", paste(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2), collapse = ", ")))
-cat(paste("**Disease/Phospho/Total:** ", paste(intersect(intersect(GDA_BlCa$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2), collapse = ", ")))
+cat(paste("**NMIBC/Phospho:** ", paste(sort(intersect(GDA_BlCa$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**NMIBC/Total:** ", paste(sort(intersect(GDA_BlCa$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Total/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**NMIBC/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_BlCa$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
 ```
+
+```{r GDA-list-melanoma, results = "asis", collapse = TRUE}
+cat(paste("**Melanoma/Phospho:** ", paste(sort(intersect(GDA_melanoma$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Melanoma/Total:** ", paste(sort(intersect(GDA_melanoma$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Melanoma/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Melanoma/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_melanoma$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
+```
+
+```{r GDA-list-RSV, results = "asis", collapse = TRUE}
+cat(paste("**RSV/Phospho:** ", paste(sort(intersect(GDA_RSV$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**RSV/Total:** ", paste(sort(intersect(GDA_RSV$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**Total/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
+cat(paste("**RSV/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_RSV$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
+```
+
 
 
 ```{r clear-4}
 # Clearing large variables
-rm(GDA_BlCa, GDA_melanoma, GDA_RSV, GDA_table_BlCa)
+rm(GDA_BlCa, GDA_melanoma, GDA_RSV)
 ```
 
 
@@ -649,7 +630,7 @@ vertices_df$Complex <- case_when(vertices_df$Complex == "#" ~ "No ID",
 # Creating a dataframe connecting edges (source and target vertices)
 complex_vertices <- data.frame(vertices = c(unique(genes_histone_joined$Symbol), unique(genes_histone_joined$PTM)))
 edges_df <- full_join(genes_histone_joined, complex_df, by = join_by("Complex" == "complexes")) %>% relocate(c("Symbol", "PTM"))
-edges_df <- left_join(complex_vertices, edges_df, by = join_by("vertices" == "Symbol")) %>% rename("Symbol" = "vertices")
+edges_df <- left_join(complex_vertices, edges_df, by = join_by("vertices" == "Symbol")) %>% dplyr::rename("Symbol" = "vertices")
 
 edges_df$Symbol <- case_when(is.na(edges_df$Symbol) ~ edges_df$PTM,
                                .default = edges_df$Symbol)
@@ -672,7 +653,7 @@ sig_network["weight"] <- 1
 sig_network$Complex <- factor(sig_network$Complex, levels = unique(as.character(sig_network$Complex)))
 
 ggplot(sig_network, aes(x = Complex, y = Symbol, fill = PTM)) +
-  geom_bin_2d() +
+  geom_bin_2d(binwidth = 1, center = 0) +
   theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1),
         axis.title.x = element_blank(), axis.title.y = element_blank()) +
   scale_fill_viridis_d() +
@@ -685,7 +666,7 @@ For future research use, we generate multiple tables containing the identified c
 ```{r complex-list, results = "asis"}
 # Identified complexes
 final_complexes <- filter(vertices_df, vertices_df$Source != "Histone") %>% filter(Complex != "No ID") %>% drop_na() %>% distinct()
-final_complex_list <- unique(final_complexes$Complex)
+final_complex_list <- sort(unique(final_complexes$Complex))
 
 cat(paste("**Networked Complexes:** ", paste(final_complex_list, collapse = ", ")))
 ```
@@ -706,7 +687,7 @@ knitr::kable(final_members)
 
 ```{r complex-PTMs}
 # Differential PTMs
-final_PTMs <- distinct(final_complexes, pick(PTM, Diff)) %>% rename("Differential expression" = "Diff")
+final_PTMs <- distinct(final_complexes, pick(PTM, Diff)) %>% dplyr::rename("Differential expression" = "Diff")
 knitr::kable(final_PTMs)
 ```
 
@@ -714,7 +695,7 @@ knitr::kable(final_PTMs)
 ```{r complex-genes}
 # Genes
 final_proteins <- unique(final_complexes$Symbol)
-final_func <- filter(genes, genes$`HGNC approved symbol` %in% final_proteins) %>% select(!c("UniProt ID (human)"))
+final_func <- filter(genes, genes$`HGNC approved symbol` %in% final_proteins) %>% dplyr::select(!c("UniProt ID (human)"))
 knitr::kable(final_func)
 ```
 
@@ -768,9 +749,9 @@ G.remove_nodes_from(lone_nodes)
 # To change the parameters of what's being graphed, adjust the initial call to Network()
 net = Network(height="900px", notebook = True, select_menu = True, cdn_resources = "in_line")
 net.from_nx(G)
-net.save_graph("networkx-pyvis.html")
+net.save_graph("networkx-pyvis-BCG.html")
 ```
 
 ```{r print-HTML}
-htmltools::renderDocument(htmltools::htmlTemplate("networkx-pyvis.html"))
+htmltools::renderDocument(htmltools::htmlTemplate("networkx-pyvis-BCG.html"))
 ```
