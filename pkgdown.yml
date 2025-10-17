@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   articles/BCG_case: BCG_case.html
   articles/MCF7_case: MCF7_case.html
-last_built: 2025-10-16T23:37Z
+last_built: 2025-10-17T01:40Z
 urls:
   reference: https://zoe-schaefer.github.io/MPOInt/reference
   article: https://zoe-schaefer.github.io/MPOInt/articles

@@ -71,9 +71,8 @@ phosphoproteome data are sourced from <span class="citation">Han et al.
 (2024)</span>. Total and phosphoproteome data are designed to be input
 as an Excel sheet from MaxQuant, and the histone data are derived from
 <span class="citation">LeRoy et al. (2013)</span>.</p>
-<p>For the reader, code chunks are collapsible in-text. The full R
-Markdown source document can also be downloaded from this page by
-clicking the “Code” dropdown above. Additionally, we have made available
+<p>The full R Markdown source document can be downloaded from this page
+by clicking the Source link above. Additionally, we have made available
 the files generated from our data at the project repository on Github.
 Other files can be downloaded from their respective sources.</p>
 <p>Most variables that need to be adjusted for individual datasets
@@ -85,18 +84,9 @@ should be set here.</p>
 <span><span class="va">phospho_FC_threshold</span> <span class="op">&lt;-</span> <span class="fl">0.5</span></span>
 <span><span class="va">histone_p_threshold</span> <span class="op">&lt;-</span> <span class="fl">0.05</span></span>
 <span><span class="va">histone_FC_threshold</span> <span class="op">&lt;-</span> <span class="fl">0.5</span></span></code></pre></div>
-<p>If you have not previously set up the <code>disgenet2r</code>
-package, run this chunk with your API key.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#DISGENET_API_KEY &lt;- "#####"</span></span>
-<span><span class="co"># Below line is for example purposes - make sure to use your own API key above and comment the next line out or delete it</span></span>
-<span><span class="va">get_api_key</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"api_key"</span><span class="op">)</span></span>
-<span> </span>
-<span><span class="co"># Keep the next line to create an environment variable with the correct API key</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>DISGENET_API_KEY <span class="op">=</span> <span class="va">get_api_key</span><span class="op">)</span></span></code></pre></div>
 <p>If you have not previously set up a Python environment from RStudio,
 run this chunk.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">virtualenv_create</span><span class="op">(</span><span class="st">"r-reticulate"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; virtualenv: r-reticulate</span></span>
 <span><span class="fu">use_virtualenv</span><span class="op">(</span><span class="st">"r-reticulate"</span><span class="op">)</span></span>
@@ -108,7 +98,7 @@ run this chunk.</p>
 </h2>
 <p>This section prepares proteome data. For data other than the example,
 read in the data in place of the <code><a href="https://rdrr.io/r/utils/data.html" class="external-link">data()</a></code> call.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">MCF7_total</span><span class="op">)</span></span>
 <span><span class="co"># Renaming to reader-friendly names not necessary here</span></span>
 <span><span class="co"># Mapping ENTREZ and UNIPROT IDs already done</span></span>
@@ -124,7 +114,7 @@ read in the data in place of the <code><a href="https://rdrr.io/r/utils/data.htm
 <h3 id="volcano-plots">1.1. Volcano plots<a class="anchor" aria-label="anchor" href="#volcano-plots"></a>
 </h3>
 <p>Here we create several volcano plots to show the data.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Setting this value - geom_text_repel will only show so many labels at once</span></span>
 <span><span class="co"># for legibility reasons. Adjust this threshold to show more/fewer points.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="st">"ggrepel.max.overlaps"</span> <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
@@ -137,7 +127,7 @@ read in the data in place of the <code><a href="https://rdrr.io/r/utils/data.htm
 <p><img src="MCF7_case_files/figure-html/total-opts-1.png" width="700"></p>
 <p>If you have known proteins of interest, use
 <code><a href="../reference/volcano_groups.html">volcano_groups()</a></code> to highlight them on a graph.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># For known groups of interest</span></span>
 <span><span class="fu"><a href="../reference/volcano_groups.html">volcano_groups</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">MCF7_total</span>, fc_col <span class="op">=</span> <span class="st">"log2(FC)"</span>, p_col <span class="op">=</span> <span class="st">"P value"</span>, label_col <span class="op">=</span> <span class="st">"SYMBOL2"</span>,</span>
 <span>  group_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Group 1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"TP53"</span>, <span class="st">"KMT2C"</span>, <span class="st">"NCOR1"</span>, <span class="st">"ARID1A"</span>, <span class="st">"SPEN"</span>, <span class="st">"FOXA1"</span>, <span class="st">"KMT2D"</span>, <span class="st">"KMT2A"</span>, <span class="st">"ATRX"</span>, <span class="st">"UBR5"</span>, <span class="st">"BRCA2"</span>, <span class="st">"RB1"</span>, <span class="st">"CHD4"</span>, <span class="st">"ATM"</span>, <span class="st">"SETD2"</span>, <span class="st">"CTCF"</span><span class="op">)</span>, <span class="st">"Group 2"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PIK3CA"</span>, <span class="st">"CDH1"</span>, <span class="st">"GATA3"</span>, <span class="st">"MUC16"</span>, <span class="st">"MAP3K1"</span>, <span class="st">"PTEN"</span>, <span class="st">"MAP2K4"</span>, <span class="st">"FAT3"</span>, <span class="st">"CSMD3"</span>, <span class="st">"NF1"</span>, <span class="st">"RUNX1"</span>, <span class="st">"TBX3"</span>, <span class="st">"FAT1"</span>, <span class="st">"AKAP9"</span>, <span class="st">"LRP1B"</span>, <span class="st">"MYH9"</span>, <span class="st">"BIRC6"</span>, <span class="st">"CBFB"</span>, <span class="st">"AKT1"</span>, <span class="st">"PIK3R1"</span>, <span class="st">"PTPRD"</span>, <span class="st">"ERBB2"</span>, <span class="st">"PREX2"</span>, <span class="st">"FAT4"</span>, <span class="st">"MUC4"</span>, <span class="st">"MED12"</span>, <span class="st">"RNF213"</span>, <span class="st">"NOTCH2"</span>, <span class="st">"FLNA"</span>, <span class="st">"ZFHX3"</span>, <span class="st">"ERBB3"</span>, <span class="st">"MTOR"</span>, <span class="st">"ANK1"</span>, <span class="st">"PTPRB"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -152,13 +142,13 @@ read in the data in place of the <code><a href="https://rdrr.io/r/utils/data.htm
 </h3>
 <p>This section prepares and performs a GSEA analysis on the total
 proteome data.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Need a named list in decreasing order</span></span>
 <span><span class="va">total_GSEA_list</span> <span class="op">&lt;-</span> <span class="va">MCF7_total</span><span class="op">$</span><span class="va">`log2(FC)`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">total_GSEA_list</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">MCF7_total</span><span class="op">$</span><span class="va">ENTREZID</span></span>
 <span><span class="va">total_GSEA_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span><span class="va">total_GSEA_list</span><span class="op">)</span></span>
 <span><span class="va">total_GSEA_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">total_GSEA_list</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">total_GSEA_GO</span> <span class="op">&lt;-</span> <span class="fu">gseGO</span><span class="op">(</span>geneList <span class="op">=</span> <span class="va">total_GSEA_list</span>, OrgDb <span class="op">=</span> <span class="st">"org.Hs.eg.db"</span>,</span>
 <span>                    verbose <span class="op">=</span> <span class="cn">FALSE</span>, ont <span class="op">=</span> <span class="st">"ALL"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in preparePathwaysAndStats(pathways, stats, minSize, maxSize, gseaParam, : There are ties in the preranked stats (0.66% of the list).</span></span>
@@ -179,7 +169,7 @@ proteome data.</p>
 <p>Plotting GSEA dot plots can be difficult due to the volume of
 information included. Changing the value of <code>label_format</code>
 adjusts the label wrapping, which can help crowded figures.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">total_GSEA_GO</span><span class="op">@</span><span class="va">result</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">dotplot</span><span class="op">(</span><span class="va">total_GSEA_GO</span>, showCategory <span class="op">=</span> <span class="fl">20</span>, font.size <span class="op">=</span> <span class="fu">rel</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, label_format <span class="op">=</span> <span class="fl">40</span>, title <span class="op">=</span> <span class="st">"GO enrichment"</span>,</span>
 <span>          split <span class="op">=</span> <span class="st">"ONTOLOGY"</span><span class="op">)</span> <span class="op">+</span> <span class="fu">facet_wrap</span><span class="op">(</span><span class="va">ONTOLOGY</span><span class="op">~</span><span class="va">.sign</span>, scales <span class="op">=</span> <span class="st">"free_y"</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
@@ -187,7 +177,7 @@ adjusts the label wrapping, which can help crowded figures.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"Error: no terms enriched under P-value cutoff (total_GSEA_GO)"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/total-enrich-plots-1.png" width="2187.5"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">simple_total_GSEA_GO</span><span class="op">@</span><span class="va">result</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">dotplot</span><span class="op">(</span><span class="va">simple_total_GSEA_GO</span>, showCategory <span class="op">=</span> <span class="fl">20</span>, font.size <span class="op">=</span> <span class="fu">rel</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, label_format <span class="op">=</span> <span class="fl">40</span>, title <span class="op">=</span> <span class="st">"Simplified GO enrichment"</span>,</span>
@@ -196,7 +186,7 @@ adjusts the label wrapping, which can help crowded figures.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"Error: no terms enriched under P-value cutoff (simple_total_GSEA_GO)"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/total-enrich-plots-2.png" width="2187.5"></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">total_GSEA_KEGG</span><span class="op">@</span><span class="va">result</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">dotplot</span><span class="op">(</span><span class="va">total_GSEA_KEGG</span>, showCategory <span class="op">=</span> <span class="fl">20</span>, font.size <span class="op">=</span> <span class="fu">rel</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, label_format <span class="op">=</span> <span class="fl">40</span>, title <span class="op">=</span> <span class="st">"KEGG enrichment"</span>,</span>
@@ -205,7 +195,7 @@ adjusts the label wrapping, which can help crowded figures.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"Error: no terms enriched under P-value cutoff (total_GSEA_KEGG)"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/total-enrich-plots-3.png" width="2187.5"></p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Clearing large variables</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">MCF7_total</span>, <span class="va">total_GSEA_GO</span>, <span class="va">simple_total_GSEA_GO</span>, <span class="va">total_GSEA_KEGG</span>, <span class="va">total_GSEA_list</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -215,7 +205,7 @@ adjusts the label wrapping, which can help crowded figures.</p>
 </h2>
 <p>Similar to the previous section, this prepares phosphoproteome
 data.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Renaming to reader-friendly names not necessary here</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">MCF7_phospho</span><span class="op">)</span></span>
 <span><span class="co"># Mapping ENTREZ IDs and a gene symbol column to UniProt IDs for later analysis</span></span>
@@ -239,7 +229,7 @@ data.</p>
 <div class="section level3">
 <h3 id="volcano-plots-1">2.1. Volcano plots<a class="anchor" aria-label="anchor" href="#volcano-plots-1"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Setting this value - geom_text_repel will only show so many labels at once</span></span>
 <span><span class="co"># for legibility reasons. Adjust this threshold to show more/fewer points.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="st">"ggrepel.max.overlaps"</span> <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
@@ -250,7 +240,7 @@ data.</p>
 <span><span class="co">#&gt; Warning: ggrepel: 1025 unlabeled data points (too many overlaps). Consider</span></span>
 <span><span class="co">#&gt; increasing max.overlaps</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/phospho-plot-1.png" width="700"></p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># For known groups of interest</span></span>
 <span><span class="fu"><a href="../reference/volcano_groups.html">volcano_groups</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">MCF7_phospho</span>, fc_col <span class="op">=</span> <span class="st">"log2(FC)"</span>, p_col <span class="op">=</span> <span class="st">"P value"</span>, label_col <span class="op">=</span> <span class="st">"SYMBOL2"</span>,</span>
 <span>  group_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Group 1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ASH2L"</span>, <span class="st">"ASXL1"</span>, <span class="st">"ASXL2"</span>, <span class="st">"BAP1"</span>, <span class="st">"BMI1"</span>, <span class="st">"CHD4"</span>, <span class="st">"EZH2"</span>, <span class="st">"DMAP1"</span>,</span>
@@ -267,18 +257,18 @@ data.</p>
 <div class="section level3">
 <h3 id="gsea-1">2.2. GSEA<a class="anchor" aria-label="anchor" href="#gsea-1"></a>
 </h3>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Need a named list in decreasing order</span></span>
 <span><span class="va">MCF7_phospho</span> <span class="op">&lt;-</span> <span class="fu">drop_na</span><span class="op">(</span><span class="va">MCF7_phospho</span>, <span class="va">ENTREZID</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">distinct</span><span class="op">(</span><span class="va">ENTREZID</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">phospho_GSEA_list</span> <span class="op">&lt;-</span> <span class="va">MCF7_phospho</span><span class="op">$</span><span class="va">`log2(FC)`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phospho_GSEA_list</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">MCF7_phospho</span><span class="op">$</span><span class="va">ENTREZID</span></span>
 <span><span class="va">phospho_GSEA_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">phospho_GSEA_list</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">phospho_GSEA_GO</span> <span class="op">&lt;-</span> <span class="fu">gseGO</span><span class="op">(</span>geneList <span class="op">=</span> <span class="va">phospho_GSEA_list</span>, OrgDb <span class="op">=</span> <span class="st">"org.Hs.eg.db"</span>,</span>
 <span>                    verbose <span class="op">=</span> <span class="cn">FALSE</span>, ont <span class="op">=</span> <span class="st">"ALL"</span><span class="op">)</span></span>
 <span><span class="va">phospho_GSEA_KEGG</span> <span class="op">&lt;-</span> <span class="fu">gseKEGG</span><span class="op">(</span>geneList <span class="op">=</span> <span class="va">phospho_GSEA_list</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; no term enriched under specific pvalueCutoff...</span></span></code></pre></div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">phospho_GSEA_GO</span><span class="op">@</span><span class="va">result</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">dotplot</span><span class="op">(</span><span class="va">phospho_GSEA_GO</span>, showCategory <span class="op">=</span> <span class="fl">20</span>, font.size <span class="op">=</span> <span class="fu">rel</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, label_format <span class="op">=</span> <span class="fl">50</span>, title <span class="op">=</span> <span class="st">"GO enrichment"</span>,</span>
 <span>          split <span class="op">=</span> <span class="st">"ONTOLOGY"</span><span class="op">)</span> <span class="op">+</span> <span class="fu">facet_wrap</span><span class="op">(</span><span class="va">ONTOLOGY</span><span class="op">~</span><span class="va">.sign</span>, scales <span class="op">=</span> <span class="st">"free_y"</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
@@ -286,7 +276,7 @@ data.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"Error: no terms enriched under P-value cutoff (simple_phospho_GSEA_GO)"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/phospho-enrich-plots-1.png" width="700"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">phospho_GSEA_KEGG</span><span class="op">@</span><span class="va">result</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">dotplot</span><span class="op">(</span><span class="va">phospho_GSEA_KEGG</span>, showCategory <span class="op">=</span> <span class="fl">20</span>, font.size <span class="op">=</span> <span class="fu">rel</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, label_format <span class="op">=</span> <span class="fl">40</span>, title <span class="op">=</span> <span class="st">"KEGG enrichment"</span>,</span>
@@ -295,7 +285,7 @@ data.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"Error: no terms enriched under P-value cutoff (phospho_GSEA_KEGG)"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt; [1] "Error: no terms enriched under P-value cutoff (phospho_GSEA_KEGG)"</span></span></code></pre></div>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Clearing large variables</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">phospho_GSEA_GO</span>, <span class="va">phospho_GSEA_KEGG</span>, <span class="va">MCF7_phospho</span>,</span>
 <span>   <span class="va">phospho_GSEA_list</span><span class="op">)</span></span></code></pre></div>
@@ -309,7 +299,7 @@ user-friendly format. In this case, the epiproteome data is in a summary
 statistics format, where each condition is only presented as a mean
 value with standard deviation. We create a standard baseline and then
 generate a P value from a T score.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">MCF7_histones</span><span class="op">)</span></span>
 <span><span class="va">histone_frag_raw</span> <span class="op">&lt;-</span> <span class="va">MCF7_histones</span></span>
 <span><span class="co"># Creating an overall baseline by averaging the non-cancer cell lines</span></span>
@@ -333,7 +323,7 @@ generate a P value from a T score.</p>
 </h4>
 <p>The data available here was already in a legible format, so we do not
 have to process it extensively.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Setting this value - geom_text_repel will only show so many labels at once</span></span>
 <span><span class="co"># for legibility reasons. Adjust this threshold to show more/fewer points.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="st">"ggrepel.max.overlaps"</span> <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
@@ -352,7 +342,7 @@ have to process it extensively.</p>
 <p>This section parses the fragments into single PTMs. Each occurrence
 is counted individually - for example, H4 4-17 K5acK12acK16ac would be
 counted as H4K5ac, H4K8ac, and H4K16ac.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># warnings silenced - multiple warnings come up if a regex string is empty</span></span>
 <span><span class="va">histone_single_raw</span> <span class="op">&lt;-</span> <span class="va">histone_frag_raw</span></span>
 <span><span class="va">histone_single_raw</span> <span class="op">&lt;-</span> <span class="va">histone_single_raw</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"\\."</span>, <span class="va">histone_single_raw</span><span class="op">$</span><span class="va">PTM</span><span class="op">)</span>,<span class="op">]</span></span>
@@ -381,7 +371,7 @@ counted as H4K5ac, H4K8ac, and H4K16ac.</p>
 <span><span class="va">histone_single_long</span><span class="op">$</span><span class="va">PTM</span> <span class="op">&lt;-</span> <span class="fu">str_remove</span><span class="op">(</span><span class="va">histone_single_long</span><span class="op">$</span><span class="va">PTM</span>, <span class="st">" .+ "</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">str_replace</span><span class="op">(</span><span class="st">"me1"</span>, <span class="st">"me"</span><span class="op">)</span></span>
 <span><span class="va">histone_single_long</span> <span class="op">&lt;-</span> <span class="fu">bind_rows</span><span class="op">(</span><span class="va">histone_single_long</span>, <span class="va">histone_single_unmod</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">histone_single_raw</span> <span class="op">&lt;-</span> <span class="va">histone_single_long</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">`PTM`</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">summarize</span><span class="op">(</span><span class="st">"sample ave"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`MCF7 ave (5 reps)`</span><span class="op">)</span>,</span>
@@ -399,7 +389,7 @@ counted as H4K5ac, H4K8ac, and H4K16ac.</p>
 <span><span class="va">histone_single_p</span><span class="op">$</span><span class="va">PTM</span> <span class="op">&lt;-</span> <span class="fu">str_remove</span><span class="op">(</span><span class="va">histone_single_p</span><span class="op">$</span><span class="va">PTM</span>, <span class="st">" .+ "</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">str_remove</span><span class="op">(</span><span class="st">"un"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">str_replace</span><span class="op">(</span><span class="st">"me1"</span>, <span class="st">"me"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Clearing large variables</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">MCF7_histones</span>, <span class="va">histone_frag</span>, <span class="va">histone_frag_raw</span>, <span class="va">histone_p</span>,</span>
 <span>   <span class="va">histone_single_long</span>, <span class="va">histone_single_long_p</span>, <span class="va">histone_single_raw</span>,</span>
@@ -414,34 +404,27 @@ counted as H4K5ac, H4K8ac, and H4K16ac.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="test">3.5 test<a class="anchor" aria-label="anchor" href="#test"></a>
+<h2 id="disease-enrichment">4. Disease enrichment<a class="anchor" aria-label="anchor" href="#disease-enrichment"></a>
 </h2>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<p>Here we perform disease enrichment using the <a href="https://www.gsea-msigdb.org/gsea/msigdb/human/genesets.jsp" class="external-link">MSigDB
+database</a> and the MSigDBR package. First, identify a dataset of
+interest in the database. The next chunk shows databases sourced through
+MSigDB but originating from PubMed and Human Phenotype Ontology. The
+<code>collection</code> parameter identifies the MSigDB collection to
+search, followed by <code>gs_exact_source</code> that specifies the
+selected dataset. This can also be replaced with <code>gs_id</code> if
+you are using the “Systematic name” value on the website.</p>
+<p>We enrich our primary disease of interest (breast cancer), but also
+include enrichment for hypertension and ovarian cancer.</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">GDA_ERBC</span> <span class="op">&lt;-</span> <span class="fu">msigdbr</span><span class="op">(</span>collection <span class="op">=</span> <span class="st">"C2"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">gs_id</span> <span class="op">==</span> <span class="st">"M18299"</span><span class="op">)</span></span>
 <span><span class="va">GDA_HT</span> <span class="op">&lt;-</span> <span class="fu">msigdbr</span><span class="op">(</span>collection <span class="op">=</span> <span class="st">"C5"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">gs_exact_source</span> <span class="op">==</span> <span class="st">"HP:0000822"</span><span class="op">)</span></span>
 <span><span class="va">GDA_OvCa</span> <span class="op">&lt;-</span> <span class="fu">msigdbr</span><span class="op">(</span>collection <span class="op">=</span> <span class="st">"C5"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">gs_exact_source</span> <span class="op">==</span> <span class="st">"HP:0100615"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="disease-enrichment">4. Disease enrichment<a class="anchor" aria-label="anchor" href="#disease-enrichment"></a>
-</h2>
-<p>Here we perform disease enrichment using the DisGeNET database. We
-first search for a list of Concept Unique Identifiers (CUIs) that
-identify a specific disease of interest. If a CUI is already known, that
-can be used in the following chunks.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">GDA_table_BC</span> <span class="op">&lt;-</span> <span class="fu">get_umls_from_vocabulary</span><span class="op">(</span>disease <span class="op">=</span> <span class="st">"breast cancer"</span>,  vocabulary <span class="op">=</span> <span class="st">"NAME"</span> ,  limit <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">@</span><span class="va">qresult</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">GDA_table_BC</span>, caption <span class="op">=</span> <span class="st">"List of CUIs that map to breast cancer"</span>, row.names <span class="op">=</span> <span class="cn">F</span><span class="op">)</span>  </span></code></pre></div>
-<p>We enrich our primary disease of interest (breast cancer), but also
-include enrichment for hypertension and ovarian cancer.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">GDA_ERBC</span> <span class="op">&lt;-</span> <span class="fu">disease2gene</span><span class="op">(</span>disease <span class="op">=</span> <span class="st">"UMLS_C0678222"</span>, database <span class="op">=</span> <span class="st">"CURATED"</span><span class="op">)</span><span class="op">@</span><span class="va">qresult</span></span>
-<span><span class="va">GDA_HT</span> <span class="op">&lt;-</span> <span class="fu">disease2gene</span><span class="op">(</span>disease <span class="op">=</span> <span class="st">"UMLS_C2973725"</span>, database <span class="op">=</span> <span class="st">"CURATED"</span><span class="op">)</span><span class="op">@</span><span class="va">qresult</span></span>
-<span><span class="va">GDA_OvCa</span> <span class="op">&lt;-</span> <span class="fu">disease2gene</span><span class="op">(</span>disease <span class="op">=</span> <span class="st">"UMLS_C0677886"</span>, database <span class="op">=</span> <span class="st">"CURATED"</span><span class="op">)</span><span class="op">@</span><span class="va">qresult</span></span></code></pre></div>
 <p>This chunk creates Venn diagrams of the overlap between proteins that
 were significant and above the fold change threshold in the total and
 phosphoproteome, as well as the genes of interest that were just
 retrieved.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get lists of proteins that were significant AND above the FC threshold</span></span>
 <span><span class="va">total_FC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">MCF7_total_sig</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">`log2(FC)`</span><span class="op">)</span> <span class="op">&gt;</span> <span class="va">total_FC_threshold</span><span class="op">)</span></span>
 <span><span class="va">phospho_FC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">MCF7_phospho_sig</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">`log2(FC)`</span><span class="op">)</span> <span class="op">&gt;</span> <span class="va">phospho_FC_threshold</span><span class="op">)</span></span>
@@ -456,7 +439,7 @@ retrieved.</p>
 <span>  plot.title.position <span class="op">=</span> <span class="st">"plot"</span>,</span>
 <span>  plot.title <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/GDA-1.png" width="700"></p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu">ggvenn</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Hypertension"</span> <span class="op">=</span> <span class="va">GDA_HT</span><span class="op">$</span><span class="va">gene_symbol</span>,</span>
@@ -467,7 +450,7 @@ retrieved.</p>
 <span>  plot.title.position <span class="op">=</span> <span class="st">"plot"</span>,</span>
 <span>  plot.title <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/GDA-2.png" width="700"></p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu">ggvenn</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Ovarian cancer"</span> <span class="op">=</span> <span class="va">GDA_OvCa</span><span class="op">$</span><span class="va">gene_symbol</span>,</span>
@@ -480,15 +463,16 @@ retrieved.</p>
 <p><img src="MCF7_case_files/figure-html/GDA-3.png" width="700"></p>
 <p>We next print a list of proteins in the four intersecting areas for
 further investigation in our disease of interest.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Print the list of proteins in each intersection</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Disease/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_ERBC</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Disease/Phospho:</strong> AHNAK, KDM4B, MAGED2</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Disease/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_ERBC</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Disease/Total:</strong> ANXA9, KDM4B, MAGED2, P4HTM</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Total/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**ER breast cancer/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_ERBC</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>ER breast cancer/Phospho:</strong> AHNAK, KDM4B, MAGED2</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**ER breast cancer/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_ERBC</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>ER breast cancer/Total:</strong> ANXA9, KDM4B, MAGED2,
+P4HTM</p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Total/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Total/Phospho:</strong> AGPS, AHNAK2, AJUBA, AKAP13, AKT2,
 ALDOC, ALPI, ANKRD17, ANTXR1, APTX, ARHGAP29, ARHGEF18, ASH2L, ASPSCR1,
 ATP2B1, BAG3, BAIAP2, BAZ1B, BCKDHA, BCL3, BHLHE40, BIN1, BNIP3L, BRD9,
@@ -516,14 +500,99 @@ TPPP, TPRN, TRAF1, TRAF7, TTC38, TTF2, TTK, UBAP2, UCK2, UHRF1, USP6NL,
 VDAC2, VEZF1, VIPAS39, VRK3, WWP2, XPC, XPO4, XRN2, YBX1, YBX3, YTHDF2,
 ZBTB38, ZDHHC20, ZFAND5, ZFAND6, ZKSCAN1, ZMYM1, ZNF185, ZNF22, ZNF576,
 ZNF691, ZNF800, ZNRF2, ZYX</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**ER breast cancer/Phospho/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_ERBC</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>ER breast cancer/Phospho/Total:</strong> KDM4B, MAGED2</p>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Hypertension/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_HT</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Hypertension/Phospho:</strong> BAZ1B, CTNNB1, ERCC6, FMR1,
+GNAS, GTF2I, INF2, JMJD1C, KDM1A, LDLRAP1, LIMK1, MED12, MEF2A, MTRR,
+MUC1, NOTCH2, REST, SMARCAL1, TSC1</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Hypertension/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_HT</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Hypertension/Total:</strong> ACAT1, AIP, ALG9, ALMS1, ARVCF,
+BAZ1B, BICC1, BSCL2, CCND1, CDKN1B, CDKN2C, CEP83, CTNNB1, ENG, ETS1,
+EXT2, FIG4, H4C3, IFT27, IMPDH2, KIAA0319L, LDLR, LOX, MAX, MDH2, MECP2,
+NOTCH2, PCSK9, PLAAT3, PRKAR1A, PRNP, SCLT1, SDHA, SDHB, SMARCAL1,
+TGFBR2, TREX1, TRIM32, VANGL1, WNK1, YY1AP1, ZMPSTE24</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Disease/Phospho/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_ERBC</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Disease/Phospho/Total:</strong> KDM4B, MAGED2</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Total/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Total/Phospho:</strong> AGPS, AHNAK2, AJUBA, AKAP13, AKT2,
+ALDOC, ALPI, ANKRD17, ANTXR1, APTX, ARHGAP29, ARHGEF18, ASH2L, ASPSCR1,
+ATP2B1, BAG3, BAIAP2, BAZ1B, BCKDHA, BCL3, BHLHE40, BIN1, BNIP3L, BRD9,
+BRSK2, BTRC, BUB1, C1orf131, CAMKK1, CCDC137, CCDC6, CCDC86, CCPG1,
+CCZ1, CD83, CDC20, CDC25C, CDC6, CDCA2, CDCA3, CDK18, CEP192, CEP85,
+CHAF1B, CHEK2, CHML, CIZ1, CLASP2, CLIP1, COPRS, COPS8, CORO7, CTDSPL,
+CTNNB1, CTTNBP2, CWC25, DAB2, DAG1, DAXX, DDB2, DDX1, DDX24, DDX47,
+DENND5B, DEPTOR, DIAPH1, DIAPH3, DICER1, DOCK10, DZIP3, EGLN1, EHBP1L1,
+EIF2AK1, EIF4EBP2, EIF4G2, ELAVL1, ENO2, EP400, EPB41, FAM199X, FARP2,
+FBXL20, FBXW9, FERMT2, FNTB, FUNDC2, GTPBP4, HBP1, HMGCS1, HSF1, IRS2,
+ITCH, IVNS1ABP, JAG2, JUNB, KCTD5, KDM2B, KDM3A, KDM4A, KDM4B, KIF20A,
+KIFAP3, KLF10, KLF13, KLHDC10, KLRG2, KRI1, L1CAM, LARP4, LATS2, LIG3,
+LPIN3, LRP1, LRRC41, MAF1, MAGED2, MAPK3, MCMBP, MELK, MET, MID1, MITF,
+MLXIP, MNAT1, MPHOSPH6, MRPL1, MYC, MYPN, NAP1L1, NBR1, NCAPD2, NCAPD3,
+NCKAP5L, NEIL2, NEMF, NFKB2, NOP2, NOTCH2, NUFIP1, NUFIP2, NXF1, NYAP2,
+OSBPL9, OSER1, OTUD5, PARP1, PAWR, PBXIP1, PDHA1, PDS5B, PHLDB1, PKP3,
+PLEKHO2, PLK1, PNPO, PPA2, PPP1R15B, PPP1R3G, PPP2R3A, PRDM1, PRDX6,
+PRR11, PRRC2B, PTGFRN, RAB3IL1, RABGGTB, RAD51AP1, RAD54B, RBM14, RBM15,
+RBM25, RBM4, RBM47, RBPJ, REEP4, REXO4, RFC1, RIOK1, RNF25, RNF4,
+RPL27A, RPL3, RPL31, RPS10, RPS3, RPS3A, RPUSD2, RRN3, SAMHD1, SDC1,
+SFMBT1, SHMT2, SKA3, SKP2, SLC1A5, SLC20A1, SLC4A2, SLC6A15, SMARCAD1,
+SMARCAL1, SMARCC2, SMG7, SNRK, SSR1, STBD1, STK17A, SURF2, TACC1, TANC2,
+TARDBP, TBC1D9B, TBL1XR1, TCF19, TCF3, TJP1, TJP3, TNRC6B, TOP1, TP53RK,
+TPPP, TPRN, TRAF1, TRAF7, TTC38, TTF2, TTK, UBAP2, UCK2, UHRF1, USP6NL,
+VDAC2, VEZF1, VIPAS39, VRK3, WWP2, XPC, XPO4, XRN2, YBX1, YBX3, YTHDF2,
+ZBTB38, ZDHHC20, ZFAND5, ZFAND6, ZKSCAN1, ZMYM1, ZNF185, ZNF22, ZNF576,
+ZNF691, ZNF800, ZNRF2, ZYX</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Hypertension/Phospho/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_HT</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Hypertension/Phospho/Total:</strong> BAZ1B, CTNNB1, NOTCH2,
+SMARCAL1</p>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Ovarian cancer/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_OvCa</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Ovarian cancer/Phospho:</strong> BRCA1, CHEK2, CTNNB1,
+DICER1, MBD4, MSH6, PALB2, VAMP7</p>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Ovarian cancer/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_OvCa</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Ovarian cancer/Total:</strong> BRIP1, CHEK2, CTNNB1, DICER1,
+IDH2, KEAP1, MAP3K1, MLH1, PALLD, PRKAR1A, PTEN, RABL3, RAD51C, SUFU,
+TGFBR2</p>
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Total/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Total/Phospho:</strong> AGPS, AHNAK2, AJUBA, AKAP13, AKT2,
+ALDOC, ALPI, ANKRD17, ANTXR1, APTX, ARHGAP29, ARHGEF18, ASH2L, ASPSCR1,
+ATP2B1, BAG3, BAIAP2, BAZ1B, BCKDHA, BCL3, BHLHE40, BIN1, BNIP3L, BRD9,
+BRSK2, BTRC, BUB1, C1orf131, CAMKK1, CCDC137, CCDC6, CCDC86, CCPG1,
+CCZ1, CD83, CDC20, CDC25C, CDC6, CDCA2, CDCA3, CDK18, CEP192, CEP85,
+CHAF1B, CHEK2, CHML, CIZ1, CLASP2, CLIP1, COPRS, COPS8, CORO7, CTDSPL,
+CTNNB1, CTTNBP2, CWC25, DAB2, DAG1, DAXX, DDB2, DDX1, DDX24, DDX47,
+DENND5B, DEPTOR, DIAPH1, DIAPH3, DICER1, DOCK10, DZIP3, EGLN1, EHBP1L1,
+EIF2AK1, EIF4EBP2, EIF4G2, ELAVL1, ENO2, EP400, EPB41, FAM199X, FARP2,
+FBXL20, FBXW9, FERMT2, FNTB, FUNDC2, GTPBP4, HBP1, HMGCS1, HSF1, IRS2,
+ITCH, IVNS1ABP, JAG2, JUNB, KCTD5, KDM2B, KDM3A, KDM4A, KDM4B, KIF20A,
+KIFAP3, KLF10, KLF13, KLHDC10, KLRG2, KRI1, L1CAM, LARP4, LATS2, LIG3,
+LPIN3, LRP1, LRRC41, MAF1, MAGED2, MAPK3, MCMBP, MELK, MET, MID1, MITF,
+MLXIP, MNAT1, MPHOSPH6, MRPL1, MYC, MYPN, NAP1L1, NBR1, NCAPD2, NCAPD3,
+NCKAP5L, NEIL2, NEMF, NFKB2, NOP2, NOTCH2, NUFIP1, NUFIP2, NXF1, NYAP2,
+OSBPL9, OSER1, OTUD5, PARP1, PAWR, PBXIP1, PDHA1, PDS5B, PHLDB1, PKP3,
+PLEKHO2, PLK1, PNPO, PPA2, PPP1R15B, PPP1R3G, PPP2R3A, PRDM1, PRDX6,
+PRR11, PRRC2B, PTGFRN, RAB3IL1, RABGGTB, RAD51AP1, RAD54B, RBM14, RBM15,
+RBM25, RBM4, RBM47, RBPJ, REEP4, REXO4, RFC1, RIOK1, RNF25, RNF4,
+RPL27A, RPL3, RPL31, RPS10, RPS3, RPS3A, RPUSD2, RRN3, SAMHD1, SDC1,
+SFMBT1, SHMT2, SKA3, SKP2, SLC1A5, SLC20A1, SLC4A2, SLC6A15, SMARCAD1,
+SMARCAL1, SMARCC2, SMG7, SNRK, SSR1, STBD1, STK17A, SURF2, TACC1, TANC2,
+TARDBP, TBC1D9B, TBL1XR1, TCF19, TCF3, TJP1, TJP3, TNRC6B, TOP1, TP53RK,
+TPPP, TPRN, TRAF1, TRAF7, TTC38, TTF2, TTK, UBAP2, UCK2, UHRF1, USP6NL,
+VDAC2, VEZF1, VIPAS39, VRK3, WWP2, XPC, XPO4, XRN2, YBX1, YBX3, YTHDF2,
+ZBTB38, ZDHHC20, ZFAND5, ZFAND6, ZKSCAN1, ZMYM1, ZNF185, ZNF22, ZNF576,
+ZNF691, ZNF800, ZNRF2, ZYX</p>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Ovarian cancer/Phospho/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_OvCa</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Ovarian cancer/Phospho/Total:</strong> CHEK2, CTNNB1,
+DICER1</p>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Clearing large variables</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">GDA_ERBC</span>, <span class="va">GDA_HT</span>, <span class="va">GDA_OvCa</span>, <span class="va">GDA_table_BC</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in rm(GDA_ERBC, GDA_HT, GDA_OvCa, GDA_table_BC): object 'GDA_table_BC'</span></span>
-<span><span class="co">#&gt; not found</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">GDA_ERBC</span>, <span class="va">GDA_HT</span>, <span class="va">GDA_OvCa</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="epigenetic-network">5. Epigenetic network<a class="anchor" aria-label="anchor" href="#epigenetic-network"></a>
@@ -536,7 +605,7 @@ is drawn in Python and rendered as an embedded HTML file.</p>
 the MPOInt package, but can be replaced to update or change the database
 by downloading and importing the “Table of all proteins” file on the
 EpiFactors website.</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">genes</span><span class="op">)</span></span>
 <span><span class="va">total_join</span> <span class="op">&lt;-</span> <span class="fu">inner_join</span><span class="op">(</span><span class="va">genes</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">MCF7_total_sig</span>, <span class="st">"log2(FC)"</span>, <span class="st">"P value"</span>, <span class="st">"SYMBOL2"</span><span class="op">)</span>, by <span class="op">=</span> <span class="fu">join_by</span><span class="op">(</span><span class="st">"HGNC approved symbol"</span> <span class="op">==</span> <span class="st">"SYMBOL2"</span><span class="op">)</span>, multiple <span class="op">=</span> <span class="st">"any"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"Source"</span> <span class="op">=</span> <span class="st">"Total"</span><span class="op">)</span></span>
@@ -552,7 +621,7 @@ EpiFactors website.</p>
 <span><span class="co"># Assigning differential expression identifiers</span></span>
 <span><span class="va">joined_data</span><span class="op">$</span><span class="va">Diff</span> <span class="op">&lt;-</span> <span class="fu">case_when</span><span class="op">(</span><span class="va">joined_data</span><span class="op">$</span><span class="va">`log2(FC)`</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"Up"</span>,</span>
 <span>                             <span class="va">joined_data</span><span class="op">$</span><span class="va">`log2(FC)`</span> <span class="op">&lt;</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"Down"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plotting all relevant proteins from the two combined datasets</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">joined_data</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">`log2(FC)`</span>, y <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">`P value`</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_point</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>color <span class="op">=</span> <span class="va">Source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -568,7 +637,7 @@ EpiFactors website.</p>
 <span><span class="co">#&gt; Warning: ggrepel: 153 unlabeled data points (too many overlaps). Consider</span></span>
 <span><span class="co">#&gt; increasing max.overlaps</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/network-proteins-1.png" width="700"></p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Formatting histone targets</span></span>
 <span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="fu">str_flatten_comma</span><span class="op">(</span><span class="fu">str_unique</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">joined_data</span><span class="op">$</span><span class="va">Product</span>, <span class="va">joined_data</span><span class="op">$</span><span class="va">`Target entity`</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, <span class="st">", "</span>, <span class="st">"|"</span><span class="op">)</span></span>
 <span></span>
@@ -592,7 +661,7 @@ EpiFactors website.</p>
 <span>  <span class="fu">geom_text_repel</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>label <span class="op">=</span> <span class="va">PTM</span><span class="op">)</span>, show.legend <span class="op">=</span> <span class="cn">FALSE</span>, size <span class="op">=</span> <span class="fu">rel</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/network-histone-import-1.png" width="700"></p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Pivoting and formatting the gene list</span></span>
 <span><span class="va">genes_pivoted</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">genes</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HGNC approved symbol"</span>, <span class="st">"Protein complex"</span>, <span class="st">"Target entity"</span>, <span class="st">"Product"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="st">"Symbol"</span> <span class="op">=</span> <span class="st">"HGNC approved symbol"</span>, <span class="st">"Complex"</span> <span class="op">=</span> <span class="st">"Protein complex"</span>, <span class="st">"Target"</span> <span class="op">=</span> <span class="st">"Target entity"</span>, <span class="st">"Product"</span> <span class="op">=</span> <span class="st">"Product"</span><span class="op">)</span></span>
 <span></span>
@@ -614,7 +683,7 @@ EpiFactors website.</p>
 <span>                                                      <span class="st">"log2(FC)"</span>, <span class="st">"P value"</span>, <span class="st">"Source"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>                                by <span class="op">=</span> <span class="fu">join_by</span><span class="op">(</span><span class="st">"Symbol"</span> <span class="op">==</span> <span class="st">"HGNC approved symbol"</span><span class="op">)</span>,</span>
 <span>                                relationship <span class="op">=</span> <span class="st">"many-to-many"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Getting the lists into the right format for the igraph visualization</span></span>
 <span><span class="va">genes_histone_pivoted</span> <span class="op">&lt;-</span> <span class="fu">pivot_longer</span><span class="op">(</span><span class="va">genes_data_joined</span>, cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Target"</span>, <span class="st">"Product"</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>             values_to <span class="op">=</span> <span class="st">"PTM"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span></span>
@@ -633,7 +702,7 @@ EpiFactors website.</p>
 <span><span class="co"># Ensuring no NA values remain, replacing "#" with a clearer identifier</span></span>
 <span><span class="va">genes_histone_joined</span><span class="op">[</span><span class="va">genes_histone_joined</span> <span class="op">==</span> <span class="st">"#"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"No ID"</span></span>
 <span><span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">Complex</span> <span class="op">&lt;-</span> <span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">Complex</span> <span class="op">%&gt;%</span>  <span class="fu">replace_na</span><span class="op">(</span><span class="st">"No ID"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generating a dataframe for edges and a dataframe for unique vertices with metadata</span></span>
 <span><span class="va">complexes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">Complex</span><span class="op">)</span></span>
 <span><span class="va">n_complexes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">complexes</span><span class="op">)</span><span class="op">)</span></span>
@@ -653,7 +722,7 @@ EpiFactors website.</p>
 <span><span class="co"># Creating a dataframe connecting edges (source and target vertices)</span></span>
 <span><span class="va">complex_vertices</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>vertices <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">Symbol</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">PTM</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">edges_df</span> <span class="op">&lt;-</span> <span class="fu">full_join</span><span class="op">(</span><span class="va">genes_histone_joined</span>, <span class="va">complex_df</span>, by <span class="op">=</span> <span class="fu">join_by</span><span class="op">(</span><span class="st">"Complex"</span> <span class="op">==</span> <span class="st">"complexes"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">relocate</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Symbol"</span>, <span class="st">"PTM"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">edges_df</span> <span class="op">&lt;-</span> <span class="fu">left_join</span><span class="op">(</span><span class="va">complex_vertices</span>, <span class="va">edges_df</span>, by <span class="op">=</span> <span class="fu">join_by</span><span class="op">(</span><span class="st">"vertices"</span> <span class="op">==</span> <span class="st">"Symbol"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">rename</span><span class="op">(</span><span class="st">"vertices"</span> <span class="op">=</span> <span class="st">"Symbol"</span><span class="op">)</span></span>
+<span><span class="va">edges_df</span> <span class="op">&lt;-</span> <span class="fu">left_join</span><span class="op">(</span><span class="va">complex_vertices</span>, <span class="va">edges_df</span>, by <span class="op">=</span> <span class="fu">join_by</span><span class="op">(</span><span class="st">"vertices"</span> <span class="op">==</span> <span class="st">"Symbol"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="st">"Symbol"</span> <span class="op">=</span> <span class="st">"vertices"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">edges_df</span><span class="op">$</span><span class="va">Symbol</span> <span class="op">&lt;-</span> <span class="fu">case_when</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">edges_df</span><span class="op">$</span><span class="va">Symbol</span><span class="op">)</span> <span class="op">~</span> <span class="va">edges_df</span><span class="op">$</span><span class="va">PTM</span>,</span>
 <span>                               .default <span class="op">=</span> <span class="va">edges_df</span><span class="op">$</span><span class="va">Symbol</span><span class="op">)</span></span>
@@ -668,46 +737,39 @@ EpiFactors website.</p>
 <span><span class="va">edges_df</span> <span class="op">&lt;-</span> <span class="fu">drop_na</span><span class="op">(</span><span class="va">edges_df</span>, <span class="va">Diff</span><span class="op">)</span></span></code></pre></div>
 <p>This alternative visualization shows the members of the identified
 complexes without connections.</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sig_network</span> <span class="op">&lt;-</span> <span class="fu">distinct</span><span class="op">(</span><span class="fu">group_by</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">edges_df</span>, <span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span><span class="op">)</span>, <span class="va">Complex</span><span class="op">)</span>, <span class="va">Symbol</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">sig_network</span><span class="op">[</span><span class="st">"weight"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span><span class="va">sig_network</span><span class="op">$</span><span class="va">Complex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">sig_network</span><span class="op">$</span><span class="va">Complex</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">sig_network</span><span class="op">$</span><span class="va">Complex</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">PTM_colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu">paletteer_d</span><span class="op">(</span><span class="st">"ggsci::default_igv"</span>, n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">histone_df</span><span class="op">$</span><span class="va">PTM</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">histone_df</span><span class="op">$</span><span class="va">PTM</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">#paletteer_d("ggsci::default_igv") </span></span>
-<span></span>
-<span><span class="co">#PTM_colors &lt;- setNames(qualitative_hcl("Dark 3", rev = TRUE, n = length(unique(histone_df$PTM))), unique(histone_df$PTM))</span></span>
-<span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">sig_network</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">Complex</span>, y <span class="op">=</span> <span class="va">Symbol</span>, fill <span class="op">=</span> <span class="va">PTM</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_bin_2d</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_bin_2d</span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">1</span>, center <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme</span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">90</span>, vjust <span class="op">=</span> <span class="fl">1</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>        axis.title.x <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span>, axis.title.y <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">scale_fill_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="va">PTM_colors</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_fill_viridis_d</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">scale_y_discrete</span><span class="op">(</span>limits <span class="op">=</span> <span class="va">rev</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Figure 7d: Network bins"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; `stat_bin2d()` using `bins = 30`. Pick better value `binwidth`.</span></span></code></pre></div>
+<span>  <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Network bins"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/network-bars-1.png" width="700"></p>
 <div class="section level3">
 <h3 id="complex-and-member-identification">5.1 Complex and member identification<a class="anchor" aria-label="anchor" href="#complex-and-member-identification"></a>
 </h3>
 <p>For future research use, we generate multiple tables containing the
 identified complexes, members, common targets, and identified PTMs.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Identified complexes</span></span>
 <span><span class="va">final_complexes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">vertices_df</span>, <span class="va">vertices_df</span><span class="op">$</span><span class="va">Source</span> <span class="op">!=</span> <span class="st">"Histone"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">drop_na</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">final_complex_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">final_complexes</span><span class="op">$</span><span class="va">Complex</span><span class="op">)</span></span>
+<span><span class="va">final_complex_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">final_complexes</span><span class="op">$</span><span class="va">Complex</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Networked Complexes:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">final_complex_list</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Networked Complexes:</strong> B-WICH, WINAC, SWI/SNF
-BRM-BRG1, PRC1, CAF-1, CHD8, MLL2/3, MLL4/WBP7, NuRD, MLL-HCF,
-LSD-CoREST, SWR, NuA4, Piccolo_NuA4, NSL, MOZ/MORF, HBO1, BHC, SCL,
-BCOR, COMPASS-like MLL3,4, COMPASS-like MLL1,2, RING2-L3MBTL2, NuRF,
-SWI/SNF_Brg1(I), SWI/SNF_Brg1(II), SWI/SNF_Brm, mSin3A, core HDAC,
-mSin3A-like complex, PRC2, RING2-FBRS, BAF, nBAF, npBAF, bBAF, PBAF,
-SWI/SNF-like_EPAFa, SWI/SNF-like EPAFB, CREST-BRG1, NuA4-related
-complex, SRCAP, eNoSc, STAGA, SAGA</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<p><strong>Networked Complexes:</strong> B-WICH, BAF, bBAF, BCOR, BHC,
+CAF-1, CHD8, COMPASS-like MLL1,2, COMPASS-like MLL3,4, core HDAC,
+CREST-BRG1, eNoSc, HBO1, LSD-CoREST, MLL-HCF, MLL2/3, MLL4/WBP7,
+MOZ/MORF, mSin3A, mSin3A-like complex, nBAF, npBAF, NSL, NuA4,
+NuA4-related complex, NuRD, NuRF, PBAF, Piccolo_NuA4, PRC1, PRC2,
+RING2-FBRS, RING2-L3MBTL2, SAGA, SCL, SRCAP, STAGA, SWI/SNF BRM-BRG1,
+SWI/SNF_Brg1(I), SWI/SNF_Brg1(II), SWI/SNF_Brm, SWI/SNF-like EPAFB,
+SWI/SNF-like_EPAFa, SWR, WINAC</p>
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># List members of each</span></span>
 <span><span class="va">final_members</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"Complex"</span> <span class="op">=</span> <span class="st">""</span>, <span class="st">"Members"</span> <span class="op">=</span> <span class="st">""</span>, <span class="st">"PTMs"</span> <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span>
 <span></span>
@@ -742,104 +804,14 @@ complex, SRCAP, eNoSc, STAGA, SAGA</p>
 <td align="left">H2AXT142, H2AXY142ph, H3, H4</td>
 </tr>
 <tr class="odd">
-<td align="left">WINAC</td>
-<td align="left">BAZ1B, CHAF1B, SMARCA2, SMARCA4</td>
-<td align="left">H2AXT142, H2AXY142ph, H3, H4</td>
-</tr>
-<tr class="even">
-<td align="left">SWI/SNF BRM-BRG1</td>
-<td align="left">BRD7, BRD9, SMARCA2, SMARCA4</td>
-<td align="left">H3K9ac, H3K14ac, H3K8ac, H3, H4</td>
-</tr>
-<tr class="odd">
-<td align="left">PRC1</td>
-<td align="left">CBX6, CBX8, RNF2</td>
-<td align="left">H3K9me3, H3K27me3, H2AK119, H2AK119ub</td>
-</tr>
-<tr class="even">
-<td align="left">CAF-1</td>
-<td align="left">CHAF1A, CHAF1B, RBBP4</td>
+<td align="left">BAF</td>
+<td align="left">SMARCA2, SMARCA4</td>
 <td align="left">H3, H4</td>
 </tr>
-<tr class="odd">
-<td align="left">CHD8</td>
-<td align="left">CHD8, HCFC2, KANSL1, KDM6A, KMT2A, LAS1L, PHF20, RNF2,
-TAF1</td>
-<td align="left">H1, H3, H4, H4ac, H3K27me2. H3K27me3, H3K27, H3K4,
-H3K4me, H3K4me2, H3Ac, H4Ac, H2AAc, H3,H4,H2A, H2AK119, H2AK119ub,
-H3ac</td>
-</tr>
 <tr class="even">
-<td align="left">MLL2/3</td>
-<td align="left">CHD8, HCFC2, KANSL1, KDM6A, LAS1L, PHF20, RNF2,
-TAF1</td>
-<td align="left">H1, H3, H4, H4ac, H3K27me2. H3K27me3, H3K27, H3K4,
-H3K4me, H3K4me2, H3Ac, H4Ac, H2AAc, H3,H4,H2A, H2AK119, H2AK119ub,
-H3ac</td>
-</tr>
-<tr class="odd">
-<td align="left">MLL4/WBP7</td>
-<td align="left">CHD8, HCFC2, KANSL1, KDM6A, LAS1L, PHF20, RNF2,
-TAF1</td>
-<td align="left">H1, H3, H4, H4ac, H3K27me2. H3K27me3, H3K27, H3K4,
-H3K4me, H3K4me2, H3Ac, H4Ac, H2AAc, H3,H4,H2A, H2AK119, H2AK119ub,
-H3ac</td>
-</tr>
-<tr class="even">
-<td align="left">NuRD</td>
-<td align="left">GATAD2A, GATAD2B, KDM1A, RBBP4, RBBP7</td>
-<td align="left">H2A, H2B, H3, H4, H3K4me1, H3K4, H3K9, H3K4me2,
-H3K9me</td>
-</tr>
-<tr class="odd">
-<td align="left">MLL-HCF</td>
-<td align="left">HCFC2, KMT2A</td>
-<td align="left">H3, H3K4, H3K4me</td>
-</tr>
-<tr class="even">
-<td align="left">LSD-CoREST</td>
-<td align="left">HMG20A</td>
-<td align="left">H3K4</td>
-</tr>
-<tr class="odd">
-<td align="left">SWR</td>
-<td align="left">ING3</td>
-<td align="left">H2A, H4</td>
-</tr>
-<tr class="even">
-<td align="left">NuA4</td>
-<td align="left">ING3</td>
-<td align="left">H2A, H4</td>
-</tr>
-<tr class="odd">
-<td align="left">Piccolo_NuA4</td>
-<td align="left">ING3</td>
-<td align="left">H2A, H4</td>
-</tr>
-<tr class="even">
-<td align="left">NSL</td>
-<td align="left">KANSL1, OGT, PHF20</td>
-<td align="left">H4, H4ac, H2BS112, H2BS112GlcNa</td>
-</tr>
-<tr class="odd">
-<td align="left">MOZ/MORF</td>
-<td align="left">KAT6B</td>
-<td align="left">H3, H3ac</td>
-</tr>
-<tr class="even">
-<td align="left">HBO1</td>
-<td align="left">KAT7</td>
-<td align="left">H4, H4ac</td>
-</tr>
-<tr class="odd">
-<td align="left">BHC</td>
-<td align="left">KDM1A</td>
-<td align="left">H3K4me1, H3K4, H3K9, H3K4me2, H3K9me</td>
-</tr>
-<tr class="even">
-<td align="left">SCL</td>
-<td align="left">KDM1A, SFMBT1</td>
-<td align="left">H3K4me1, H3K4, H3K9, H3K4me2, H3K9me, H4K20</td>
+<td align="left">bBAF</td>
+<td align="left">SMARCA2, SMARCA4</td>
+<td align="left">H3, H4</td>
 </tr>
 <tr class="odd">
 <td align="left">BCOR</td>
@@ -847,9 +819,22 @@ H3K9me</td>
 <td align="left">H3K4me3, H3K4, H3K36, H3K36me2, H2AK119, H2AK119ub</td>
 </tr>
 <tr class="even">
-<td align="left">COMPASS-like MLL3,4</td>
-<td align="left">KDM6A</td>
-<td align="left">H3K27me2. H3K27me3, H3K27</td>
+<td align="left">BHC</td>
+<td align="left">KDM1A</td>
+<td align="left">H3K4me1, H3K4, H3K9, H3K4me2, H3K9me</td>
+</tr>
+<tr class="odd">
+<td align="left">CAF-1</td>
+<td align="left">CHAF1A, CHAF1B, RBBP4</td>
+<td align="left">H3, H4</td>
+</tr>
+<tr class="even">
+<td align="left">CHD8</td>
+<td align="left">CHD8, HCFC2, KANSL1, KDM6A, KMT2A, LAS1L, PHF20, RNF2,
+TAF1</td>
+<td align="left">H1, H3, H4, H4ac, H3K27me2. H3K27me3, H3K27, H3K4,
+H3K4me, H3K4me2, H3Ac, H4Ac, H2AAc, H3,H4,H2A, H2AK119, H2AK119ub,
+H3ac</td>
 </tr>
 <tr class="odd">
 <td align="left">COMPASS-like MLL1,2</td>
@@ -857,14 +842,161 @@ H3K9me</td>
 <td align="left">H3K4, H3K4me</td>
 </tr>
 <tr class="even">
+<td align="left">COMPASS-like MLL3,4</td>
+<td align="left">KDM6A</td>
+<td align="left">H3K27me2. H3K27me3, H3K27</td>
+</tr>
+<tr class="odd">
+<td align="left">core HDAC</td>
+<td align="left">RBBP4, RBBP7</td>
+<td align="left">H4</td>
+</tr>
+<tr class="even">
+<td align="left">CREST-BRG1</td>
+<td align="left">SMARCA4</td>
+<td align="left">H3, H4</td>
+</tr>
+<tr class="odd">
+<td align="left">eNoSc</td>
+<td align="left">SUV39H1</td>
+<td align="left">H3S10, H3K9me3, H3K9me1, H4</td>
+</tr>
+<tr class="even">
+<td align="left">HBO1</td>
+<td align="left">KAT7</td>
+<td align="left">H4, H4ac</td>
+</tr>
+<tr class="odd">
+<td align="left">LSD-CoREST</td>
+<td align="left">HMG20A</td>
+<td align="left">H3K4</td>
+</tr>
+<tr class="even">
+<td align="left">MLL-HCF</td>
+<td align="left">HCFC2, KMT2A</td>
+<td align="left">H3, H3K4, H3K4me</td>
+</tr>
+<tr class="odd">
+<td align="left">MLL2/3</td>
+<td align="left">CHD8, HCFC2, KANSL1, KDM6A, LAS1L, PHF20, RNF2,
+TAF1</td>
+<td align="left">H1, H3, H4, H4ac, H3K27me2. H3K27me3, H3K27, H3K4,
+H3K4me, H3K4me2, H3Ac, H4Ac, H2AAc, H3,H4,H2A, H2AK119, H2AK119ub,
+H3ac</td>
+</tr>
+<tr class="even">
+<td align="left">MLL4/WBP7</td>
+<td align="left">CHD8, HCFC2, KANSL1, KDM6A, LAS1L, PHF20, RNF2,
+TAF1</td>
+<td align="left">H1, H3, H4, H4ac, H3K27me2. H3K27me3, H3K27, H3K4,
+H3K4me, H3K4me2, H3Ac, H4Ac, H2AAc, H3,H4,H2A, H2AK119, H2AK119ub,
+H3ac</td>
+</tr>
+<tr class="odd">
+<td align="left">MOZ/MORF</td>
+<td align="left">KAT6B</td>
+<td align="left">H3, H3ac</td>
+</tr>
+<tr class="even">
+<td align="left">mSin3A</td>
+<td align="left">RBBP4, RBBP7</td>
+<td align="left">H4</td>
+</tr>
+<tr class="odd">
+<td align="left">mSin3A-like complex</td>
+<td align="left">RBBP4, RBBP7</td>
+<td align="left">H4</td>
+</tr>
+<tr class="even">
+<td align="left">nBAF</td>
+<td align="left">SMARCA2, SMARCA4</td>
+<td align="left">H3, H4</td>
+</tr>
+<tr class="odd">
+<td align="left">npBAF</td>
+<td align="left">SMARCA2, SMARCA4</td>
+<td align="left">H3, H4</td>
+</tr>
+<tr class="even">
+<td align="left">NSL</td>
+<td align="left">KANSL1, OGT, PHF20</td>
+<td align="left">H4, H4ac, H2BS112, H2BS112GlcNa</td>
+</tr>
+<tr class="odd">
+<td align="left">NuA4</td>
+<td align="left">ING3</td>
+<td align="left">H2A, H4</td>
+</tr>
+<tr class="even">
+<td align="left">NuA4-related complex</td>
+<td align="left">SRCAP</td>
+<td align="left">H2A.Z</td>
+</tr>
+<tr class="odd">
+<td align="left">NuRD</td>
+<td align="left">GATAD2A, GATAD2B, KDM1A, RBBP4, RBBP7</td>
+<td align="left">H2A, H2B, H3, H4, H3K4me1, H3K4, H3K9, H3K4me2,
+H3K9me</td>
+</tr>
+<tr class="even">
+<td align="left">NuRF</td>
+<td align="left">RBBP4, RBBP7</td>
+<td align="left">H4</td>
+</tr>
+<tr class="odd">
+<td align="left">PBAF</td>
+<td align="left">SMARCA4</td>
+<td align="left">H3, H4</td>
+</tr>
+<tr class="even">
+<td align="left">Piccolo_NuA4</td>
+<td align="left">ING3</td>
+<td align="left">H2A, H4</td>
+</tr>
+<tr class="odd">
+<td align="left">PRC1</td>
+<td align="left">CBX6, CBX8, RNF2</td>
+<td align="left">H3K9me3, H3K27me3, H2AK119, H2AK119ub</td>
+</tr>
+<tr class="even">
+<td align="left">PRC2</td>
+<td align="left">RBBP4, RBBP7</td>
+<td align="left">H4</td>
+</tr>
+<tr class="odd">
+<td align="left">RING2-FBRS</td>
+<td align="left">RNF2</td>
+<td align="left">H2AK119, H2AK119ub</td>
+</tr>
+<tr class="even">
 <td align="left">RING2-L3MBTL2</td>
 <td align="left">L3MBTL2, RNF2</td>
 <td align="left">H3K4, H3K9, H3K27, H4K20, H2AK119, H2AK119ub</td>
 </tr>
 <tr class="odd">
-<td align="left">NuRF</td>
-<td align="left">RBBP4, RBBP7</td>
-<td align="left">H4</td>
+<td align="left">SAGA</td>
+<td align="left">USP22</td>
+<td align="left">H2Aub, H2A, H2B, H2Bub</td>
+</tr>
+<tr class="even">
+<td align="left">SCL</td>
+<td align="left">KDM1A, SFMBT1</td>
+<td align="left">H3K4me1, H3K4, H3K9, H3K4me2, H3K9me, H4K20</td>
+</tr>
+<tr class="odd">
+<td align="left">SRCAP</td>
+<td align="left">SRCAP</td>
+<td align="left">H2A.Z</td>
+</tr>
+<tr class="even">
+<td align="left">STAGA</td>
+<td align="left">TADA1</td>
+<td align="left">H2A</td>
+</tr>
+<tr class="odd">
+<td align="left">SWI/SNF BRM-BRG1</td>
+<td align="left">BRD7, BRD9, SMARCA2, SMARCA4</td>
+<td align="left">H3K9ac, H3K14ac, H3K8ac, H3, H4</td>
 </tr>
 <tr class="even">
 <td align="left">SWI/SNF_Brg1(I)</td>
@@ -882,100 +1014,30 @@ H3K9me</td>
 <td align="left">H4, H3</td>
 </tr>
 <tr class="odd">
-<td align="left">mSin3A</td>
-<td align="left">RBBP4, RBBP7</td>
-<td align="left">H4</td>
-</tr>
-<tr class="even">
-<td align="left">core HDAC</td>
-<td align="left">RBBP4, RBBP7</td>
-<td align="left">H4</td>
-</tr>
-<tr class="odd">
-<td align="left">mSin3A-like complex</td>
-<td align="left">RBBP4, RBBP7</td>
-<td align="left">H4</td>
-</tr>
-<tr class="even">
-<td align="left">PRC2</td>
-<td align="left">RBBP4, RBBP7</td>
-<td align="left">H4</td>
-</tr>
-<tr class="odd">
-<td align="left">RING2-FBRS</td>
-<td align="left">RNF2</td>
-<td align="left">H2AK119, H2AK119ub</td>
-</tr>
-<tr class="even">
-<td align="left">BAF</td>
-<td align="left">SMARCA2, SMARCA4</td>
-<td align="left">H3, H4</td>
-</tr>
-<tr class="odd">
-<td align="left">nBAF</td>
-<td align="left">SMARCA2, SMARCA4</td>
-<td align="left">H3, H4</td>
-</tr>
-<tr class="even">
-<td align="left">npBAF</td>
-<td align="left">SMARCA2, SMARCA4</td>
-<td align="left">H3, H4</td>
-</tr>
-<tr class="odd">
-<td align="left">bBAF</td>
-<td align="left">SMARCA2, SMARCA4</td>
-<td align="left">H3, H4</td>
-</tr>
-<tr class="even">
-<td align="left">PBAF</td>
-<td align="left">SMARCA4</td>
-<td align="left">H3, H4</td>
-</tr>
-<tr class="odd">
-<td align="left">SWI/SNF-like_EPAFa</td>
-<td align="left">SMARCA4</td>
-<td align="left">H3, H4</td>
-</tr>
-<tr class="even">
 <td align="left">SWI/SNF-like EPAFB</td>
 <td align="left">SMARCA4</td>
 <td align="left">H3, H4</td>
 </tr>
-<tr class="odd">
-<td align="left">CREST-BRG1</td>
+<tr class="even">
+<td align="left">SWI/SNF-like_EPAFa</td>
 <td align="left">SMARCA4</td>
 <td align="left">H3, H4</td>
 </tr>
-<tr class="even">
-<td align="left">NuA4-related complex</td>
-<td align="left">SRCAP</td>
-<td align="left">H2A.Z</td>
-</tr>
 <tr class="odd">
-<td align="left">SRCAP</td>
-<td align="left">SRCAP</td>
-<td align="left">H2A.Z</td>
+<td align="left">SWR</td>
+<td align="left">ING3</td>
+<td align="left">H2A, H4</td>
 </tr>
 <tr class="even">
-<td align="left">eNoSc</td>
-<td align="left">SUV39H1</td>
-<td align="left">H3S10, H3K9me3, H3K9me1, H4</td>
-</tr>
-<tr class="odd">
-<td align="left">STAGA</td>
-<td align="left">TADA1</td>
-<td align="left">H2A</td>
-</tr>
-<tr class="even">
-<td align="left">SAGA</td>
-<td align="left">USP22</td>
-<td align="left">H2Aub, H2A, H2B, H2Bub</td>
+<td align="left">WINAC</td>
+<td align="left">BAZ1B, CHAF1B, SMARCA2, SMARCA4</td>
+<td align="left">H2AXT142, H2AXY142ph, H3, H4</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Differential PTMs</span></span>
-<span><span class="va">final_PTMs</span> <span class="op">&lt;-</span> <span class="fu">distinct</span><span class="op">(</span><span class="va">final_complexes</span>, <span class="fu">pick</span><span class="op">(</span><span class="va">PTM</span>, <span class="va">Diff</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">rename</span><span class="op">(</span><span class="st">"Diff"</span> <span class="op">=</span> <span class="st">"Differential expression"</span><span class="op">)</span></span>
+<span><span class="va">final_PTMs</span> <span class="op">&lt;-</span> <span class="fu">distinct</span><span class="op">(</span><span class="va">final_complexes</span>, <span class="fu">pick</span><span class="op">(</span><span class="va">PTM</span>, <span class="va">Diff</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="st">"Differential expression"</span> <span class="op">=</span> <span class="st">"Diff"</span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">final_PTMs</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -1177,7 +1239,7 @@ H3K9me</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Genes</span></span>
 <span><span class="va">final_proteins</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">final_complexes</span><span class="op">$</span><span class="va">Symbol</span><span class="op">)</span></span>
 <span><span class="va">final_func</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">genes</span>, <span class="va">genes</span><span class="op">$</span><span class="va">`HGNC approved symbol`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">final_proteins</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"UniProt ID (human)"</span><span class="op">)</span><span class="op">)</span></span>
@@ -1507,51 +1569,46 @@ write</td>
 <p>Finally, we create an interactive network using Python via the
 <code>reticulate</code> package. This allows a dynamic visualization
 that can be refined and filtered to generate different views.</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Shapes</span> <span class="op">&lt;-</span> <span class="fu">case_when</span><span class="op">(</span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Diff</span> <span class="op">==</span> <span class="st">"Up"</span> <span class="op">~</span> <span class="st">"triangle"</span>,</span>
 <span>                             <span class="va">vertices_df</span><span class="op">$</span><span class="va">Diff</span> <span class="op">==</span> <span class="st">"Down"</span> <span class="op">~</span> <span class="st">"triangleDown"</span>,</span>
 <span>                          <span class="va">vertices_df</span><span class="op">$</span><span class="va">Diff</span> <span class="op">==</span> <span class="st">"0"</span> <span class="op">~</span> <span class="st">"ellipse"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Colors</span> <span class="op">&lt;-</span> <span class="va">PTM_colors</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">vertices_df</span><span class="op">$</span><span class="va">PTM</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">PTM_colors</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
-<span></span>
-<span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Colors</span> <span class="op">&lt;-</span> <span class="fu">case_when</span><span class="op">(</span></span>
-<span>  <span class="va">vertices_df</span><span class="op">$</span><span class="va">Source</span> <span class="op">==</span> <span class="st">"Histone"</span> <span class="op">&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Colors</span><span class="op">)</span> <span class="op">~</span> <span class="st">"gray"</span>,</span>
-<span>  <span class="va">vertices_df</span><span class="op">$</span><span class="va">Source</span> <span class="op">==</span> <span class="st">"Histone"</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Colors</span><span class="op">)</span> <span class="op">~</span> <span class="va">vertices_df</span><span class="op">$</span><span class="va">Colors</span>,</span>
-<span>  <span class="va">vertices_df</span><span class="op">$</span><span class="va">Source</span> <span class="op">==</span> <span class="st">"Total"</span> <span class="op">~</span> <span class="st">"red"</span>,</span>
-<span>  <span class="va">vertices_df</span><span class="op">$</span><span class="va">Source</span> <span class="op">==</span> <span class="st">"Phospho"</span> <span class="op">~</span> <span class="st">"blue"</span><span class="op">)</span></span>
+<span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Colors</span> <span class="op">&lt;-</span> <span class="fu">case_when</span><span class="op">(</span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Source</span> <span class="op">==</span> <span class="st">"Total"</span> <span class="op">~</span> <span class="st">"red"</span>,</span>
+<span>                          <span class="va">vertices_df</span><span class="op">$</span><span class="va">Source</span> <span class="op">==</span> <span class="st">"Phospho"</span> <span class="op">~</span> <span class="st">"blue"</span>,</span>
+<span>                          <span class="va">vertices_df</span><span class="op">$</span><span class="va">Source</span> <span class="op">==</span> <span class="st">"Histone"</span> <span class="op">~</span> <span class="st">"gray"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sig_network_py</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">vertices_df</span>, <span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span> <span class="op">|</span> <span class="va">Source</span> <span class="op">==</span> <span class="st">"Histone"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">r_to_py</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">edges_py</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">edges_df</span>, <span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span> <span class="op">|</span> <span class="va">Source</span> <span class="op">==</span> <span class="st">"Histone"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">r_to_py</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb49"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd, networkx <span class="im">as</span> nx</span>
-<span id="cb49-2"><a href="#cb49-2" tabindex="-1"></a><span class="im">from</span> pyvis.network <span class="im">import</span> Network</span></code></pre></div>
-<div class="sourceCode" id="cb50"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" tabindex="-1"></a><span class="co"># Create NetworkX graph object</span></span>
-<span id="cb50-2"><a href="#cb50-2" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
-<span id="cb50-3"><a href="#cb50-3" tabindex="-1"></a></span>
-<span id="cb50-4"><a href="#cb50-4" tabindex="-1"></a><span class="co"># Generate a nested dictionary/tuple with the node of interest ("Symbol") and </span></span>
-<span id="cb50-5"><a href="#cb50-5" tabindex="-1"></a><span class="co"># the relevant attributes (shape and complex)</span></span>
-<span id="cb50-6"><a href="#cb50-6" tabindex="-1"></a>node_list <span class="op">=</span> []</span>
-<span id="cb50-7"><a href="#cb50-7" tabindex="-1"></a><span class="cf">for</span> i, row <span class="kw">in</span> r.sig_network_py.iterrows():</span>
-<span id="cb50-8"><a href="#cb50-8" tabindex="-1"></a>  node_list.append((row[<span class="st">"Symbol"</span>], {<span class="st">"color"</span>: row.Colors, <span class="st">"Complex"</span>: row.Complex, <span class="st">"shape"</span>: row.Shapes}))</span>
-<span id="cb50-9"><a href="#cb50-9" tabindex="-1"></a>G.add_nodes_from(node_list)</span>
-<span id="cb50-10"><a href="#cb50-10" tabindex="-1"></a></span>
-<span id="cb50-11"><a href="#cb50-11" tabindex="-1"></a><span class="co"># Generate a tuple for edges connecting proteins with PTMs</span></span>
-<span id="cb50-12"><a href="#cb50-12" tabindex="-1"></a>edge_tup <span class="op">=</span> []</span>
-<span id="cb50-13"><a href="#cb50-13" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(r.edges_py[<span class="st">"Symbol"</span>])):</span>
-<span id="cb50-14"><a href="#cb50-14" tabindex="-1"></a>  edge_tup.append((r.edges_py[<span class="st">"Symbol"</span>][i], r.edges_py[<span class="st">"PTM"</span>][i]))</span>
-<span id="cb50-15"><a href="#cb50-15" tabindex="-1"></a>G.add_edges_from(edge_tup)</span>
-<span id="cb50-16"><a href="#cb50-16" tabindex="-1"></a></span>
-<span id="cb50-17"><a href="#cb50-17" tabindex="-1"></a><span class="co"># Remove self-loops</span></span>
-<span id="cb50-18"><a href="#cb50-18" tabindex="-1"></a>G.remove_edges_from(nx.selfloop_edges(G))</span>
-<span id="cb50-19"><a href="#cb50-19" tabindex="-1"></a></span>
-<span id="cb50-20"><a href="#cb50-20" tabindex="-1"></a><span class="co"># Now remove nodes without edges</span></span>
-<span id="cb50-21"><a href="#cb50-21" tabindex="-1"></a>lone_nodes <span class="op">=</span> [node <span class="cf">for</span> node, degree <span class="kw">in</span> G.degree() <span class="cf">if</span> degree <span class="op">==</span> <span class="dv">0</span>]</span>
-<span id="cb50-22"><a href="#cb50-22" tabindex="-1"></a>G.remove_nodes_from(lone_nodes)</span></code></pre></div>
-<div class="sourceCode" id="cb51"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" tabindex="-1"></a><span class="co"># To change the parameters of what's being graphed, adjust the initial call to Network()</span></span>
-<span id="cb51-2"><a href="#cb51-2" tabindex="-1"></a>net <span class="op">=</span> Network(height<span class="op">=</span><span class="st">"900px"</span>, notebook <span class="op">=</span> <span class="va">True</span>, select_menu <span class="op">=</span> <span class="va">True</span>, cdn_resources <span class="op">=</span> <span class="st">"in_line"</span>)</span>
-<span id="cb51-3"><a href="#cb51-3" tabindex="-1"></a>net.from_nx(G)</span>
-<span id="cb51-4"><a href="#cb51-4" tabindex="-1"></a>net.save_graph(<span class="st">"networkx-pyvis-MCF.html"</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd, networkx <span class="im">as</span> nx</span>
+<span id="cb54-2"><a href="#cb54-2" tabindex="-1"></a><span class="im">from</span> pyvis.network <span class="im">import</span> Network</span></code></pre></div>
+<div class="sourceCode" id="cb55"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a><span class="co"># Create NetworkX graph object</span></span>
+<span id="cb55-2"><a href="#cb55-2" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb55-3"><a href="#cb55-3" tabindex="-1"></a></span>
+<span id="cb55-4"><a href="#cb55-4" tabindex="-1"></a><span class="co"># Generate a nested dictionary/tuple with the node of interest ("Symbol") and </span></span>
+<span id="cb55-5"><a href="#cb55-5" tabindex="-1"></a><span class="co"># the relevant attributes (shape and complex)</span></span>
+<span id="cb55-6"><a href="#cb55-6" tabindex="-1"></a>node_list <span class="op">=</span> []</span>
+<span id="cb55-7"><a href="#cb55-7" tabindex="-1"></a><span class="cf">for</span> i, row <span class="kw">in</span> r.sig_network_py.iterrows():</span>
+<span id="cb55-8"><a href="#cb55-8" tabindex="-1"></a>  node_list.append((row[<span class="st">"Symbol"</span>], {<span class="st">"color"</span>: row.Colors, <span class="st">"Complex"</span>: row.Complex, <span class="st">"shape"</span>: row.Shapes}))</span>
+<span id="cb55-9"><a href="#cb55-9" tabindex="-1"></a>G.add_nodes_from(node_list)</span>
+<span id="cb55-10"><a href="#cb55-10" tabindex="-1"></a></span>
+<span id="cb55-11"><a href="#cb55-11" tabindex="-1"></a><span class="co"># Generate a tuple for edges connecting proteins with PTMs</span></span>
+<span id="cb55-12"><a href="#cb55-12" tabindex="-1"></a>edge_tup <span class="op">=</span> []</span>
+<span id="cb55-13"><a href="#cb55-13" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(r.edges_py[<span class="st">"Symbol"</span>])):</span>
+<span id="cb55-14"><a href="#cb55-14" tabindex="-1"></a>  edge_tup.append((r.edges_py[<span class="st">"Symbol"</span>][i], r.edges_py[<span class="st">"PTM"</span>][i]))</span>
+<span id="cb55-15"><a href="#cb55-15" tabindex="-1"></a>G.add_edges_from(edge_tup)</span>
+<span id="cb55-16"><a href="#cb55-16" tabindex="-1"></a></span>
+<span id="cb55-17"><a href="#cb55-17" tabindex="-1"></a><span class="co"># Remove self-loops</span></span>
+<span id="cb55-18"><a href="#cb55-18" tabindex="-1"></a>G.remove_edges_from(nx.selfloop_edges(G))</span>
+<span id="cb55-19"><a href="#cb55-19" tabindex="-1"></a></span>
+<span id="cb55-20"><a href="#cb55-20" tabindex="-1"></a><span class="co"># Now remove nodes without edges</span></span>
+<span id="cb55-21"><a href="#cb55-21" tabindex="-1"></a>lone_nodes <span class="op">=</span> [node <span class="cf">for</span> node, degree <span class="kw">in</span> G.degree() <span class="cf">if</span> degree <span class="op">==</span> <span class="dv">0</span>]</span>
+<span id="cb55-22"><a href="#cb55-22" tabindex="-1"></a>G.remove_nodes_from(lone_nodes)</span></code></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" tabindex="-1"></a><span class="co"># To change the parameters of what's being graphed, adjust the initial call to Network()</span></span>
+<span id="cb56-2"><a href="#cb56-2" tabindex="-1"></a>net <span class="op">=</span> Network(height<span class="op">=</span><span class="st">"900px"</span>, notebook <span class="op">=</span> <span class="va">True</span>, select_menu <span class="op">=</span> <span class="va">True</span>, cdn_resources <span class="op">=</span> <span class="st">"in_line"</span>)</span>
+<span id="cb56-3"><a href="#cb56-3" tabindex="-1"></a>net.from_nx(G)</span>
+<span id="cb56-4"><a href="#cb56-4" tabindex="-1"></a>net.save_graph(<span class="st">"networkx-pyvis-MCF.html"</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">htmltools</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/htmltools/reference/renderDocument.html" class="external-link">renderDocument</a></span><span class="op">(</span><span class="fu">htmltools</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/htmltools/reference/htmlTemplate.html" class="external-link">htmlTemplate</a></span><span class="op">(</span><span class="st">"networkx-pyvis-MCF.html"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 
     
@@ -2568,7 +2625,7 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"Complex": "No ID", "color": "#5050FFFF", "id": "H3K14ac", "label": "H3K14ac", "shape": "triangleDown", "size": 10}, {"Complex": "SWI/SNF BRM-BRG1", "color": "blue", "id": "BRD7", "label": "BRD7", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "#837B8DFF", "id": "H3K27me3", "label": "H3K27me3", "shape": "triangle", "size": 10}, {"Complex": "PRC1", "color": "red", "id": "CBX6", "label": "CBX6", "shape": "triangleDown", "size": 10}, {"Complex": "PRC1", "color": "blue", "id": "CBX8", "label": "CBX8", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "#C75127FF", "id": "H3K27", "label": "H3K27", "shape": "triangleDown", "size": 10}, {"Complex": "COMPASS-like MLL3,4", "color": "blue", "id": "KDM6A", "label": "KDM6A", "shape": "triangleDown", "size": 10}, {"Complex": "RING2-L3MBTL2", "color": "red", "id": "L3MBTL2", "label": "L3MBTL2", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "#7A65A5FF", "id": "H3K36me2", "label": "H3K36me2", "shape": "triangleDown", "size": 10}, {"Complex": "BCOR", "color": "blue", "id": "KDM2B", "label": "KDM2B", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "#3B1B53FF", "id": "H3K36", "label": "H3K36", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "#CDDEB7FF", "id": "H3K4me", "label": "H3K4me", "shape": "triangleDown", "size": 10}, {"Complex": "COMPASS-like MLL1,2", "color": "red", "id": "KMT2A", "label": "KMT2A", "shape": "triangle", "size": 10}, {"Complex": "MLL4/WBP7", "color": "red", "id": "LAS1L", "label": "LAS1L", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "#612A79FF", "id": "H3K4me2", "label": "H3K4me2", "shape": "triangleDown", "size": 10}, {"Complex": "SCL", "color": "blue", "id": "KDM1A", "label": "KDM1A", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "#AE1F63FF", "id": "H3K4me3", "label": "H3K4me3", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "#E7C76FFF", "id": "H3K4", "label": "H3K4", "shape": "triangle", "size": 10}, {"Complex": "LSD-CoREST", "color": "blue", "id": "HMG20A", "label": "HMG20A", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "#A9A9A9FF", "id": "H3K9ac", "label": "H3K9ac", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "#CC9900FF", "id": "H3K9me", "label": "H3K9me", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "#33CC00FF", "id": "H3K9me3", "label": "H3K9me3", "shape": "triangle", "size": 10}, {"Complex": "eNoSc", "color": "red", "id": "SUV39H1", "label": "SUV39H1", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "#00CC33FF", "id": "H3K9", "label": "H3K9", "shape": "triangleDown", "size": 10}]);
+                  nodes = new vis.DataSet([{"Complex": "No ID", "color": "gray", "id": "H3K14ac", "label": "H3K14ac", "shape": "triangleDown", "size": 10}, {"Complex": "SWI/SNF BRM-BRG1", "color": "blue", "id": "BRD7", "label": "BRD7", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K27me3", "label": "H3K27me3", "shape": "triangle", "size": 10}, {"Complex": "PRC1", "color": "red", "id": "CBX6", "label": "CBX6", "shape": "triangleDown", "size": 10}, {"Complex": "PRC1", "color": "blue", "id": "CBX8", "label": "CBX8", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K27", "label": "H3K27", "shape": "triangleDown", "size": 10}, {"Complex": "COMPASS-like MLL3,4", "color": "blue", "id": "KDM6A", "label": "KDM6A", "shape": "triangleDown", "size": 10}, {"Complex": "RING2-L3MBTL2", "color": "red", "id": "L3MBTL2", "label": "L3MBTL2", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K36me2", "label": "H3K36me2", "shape": "triangleDown", "size": 10}, {"Complex": "BCOR", "color": "blue", "id": "KDM2B", "label": "KDM2B", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K36", "label": "H3K36", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me", "label": "H3K4me", "shape": "triangleDown", "size": 10}, {"Complex": "COMPASS-like MLL1,2", "color": "red", "id": "KMT2A", "label": "KMT2A", "shape": "triangle", "size": 10}, {"Complex": "MLL4/WBP7", "color": "red", "id": "LAS1L", "label": "LAS1L", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me2", "label": "H3K4me2", "shape": "triangleDown", "size": 10}, {"Complex": "SCL", "color": "blue", "id": "KDM1A", "label": "KDM1A", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me3", "label": "H3K4me3", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4", "label": "H3K4", "shape": "triangle", "size": 10}, {"Complex": "LSD-CoREST", "color": "blue", "id": "HMG20A", "label": "HMG20A", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9ac", "label": "H3K9ac", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9me", "label": "H3K9me", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9me3", "label": "H3K9me3", "shape": "triangle", "size": 10}, {"Complex": "eNoSc", "color": "red", "id": "SUV39H1", "label": "SUV39H1", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9", "label": "H3K9", "shape": "triangleDown", "size": 10}]);
                   edges = new vis.DataSet([{"from": "H3K14ac", "to": "BRD7", "width": 1}, {"from": "H3K27me3", "to": "CBX6", "width": 1}, {"from": "H3K27me3", "to": "CBX8", "width": 1}, {"from": "H3K27", "to": "KDM6A", "width": 1}, {"from": "H3K27", "to": "L3MBTL2", "width": 1}, {"from": "H3K36me2", "to": "KDM2B", "width": 1}, {"from": "H3K36", "to": "KDM2B", "width": 1}, {"from": "H3K4me", "to": "KMT2A", "width": 1}, {"from": "H3K4me", "to": "LAS1L", "width": 1}, {"from": "H3K4me2", "to": "KDM1A", "width": 1}, {"from": "H3K4me2", "to": "LAS1L", "width": 1}, {"from": "H3K4me3", "to": "KDM2B", "width": 1}, {"from": "H3K4", "to": "HMG20A", "width": 1}, {"from": "H3K4", "to": "KDM1A", "width": 1}, {"from": "H3K4", "to": "KDM2B", "width": 1}, {"from": "H3K4", "to": "KMT2A", "width": 1}, {"from": "H3K4", "to": "L3MBTL2", "width": 1}, {"from": "H3K4", "to": "LAS1L", "width": 1}, {"from": "H3K9ac", "to": "BRD7", "width": 1}, {"from": "H3K9me", "to": "KDM1A", "width": 1}, {"from": "H3K9me3", "to": "CBX6", "width": 1}, {"from": "H3K9me3", "to": "CBX8", "width": 1}, {"from": "H3K9me3", "to": "SUV39H1", "width": 1}, {"from": "H3K9", "to": "KDM1A", "width": 1}, {"from": "H3K9", "to": "L3MBTL2", "width": 1}]);
 
                   nodeColors = {};
