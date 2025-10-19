@@ -1,6 +1,10 @@
 ---
 title: "MCF7 case"
 bibliography: "references.bib"
+output:
+  html_document:
+    code_folding: show
+    code_download: true
 ---
 This pipeline is intended for use with three levels of proteomics data: total proteome, phosphoproteome, and histone proteome. Total and phosphoproteome data are sourced from @Han2024. Total and phosphoproteome data are designed to be input as an Excel sheet from MaxQuant, and the histone data are derived from @LeRoy2013.
 
@@ -336,9 +340,9 @@ histone_single_p$PTM <- str_remove(histone_single_p$PTM, " .+ ") %>%
 ```
 ```{r clear-3}
 # Clearing large variables
-rm(MCF7_histones, histone_frag, histone_frag_raw, histone_p,
-   histone_single_long, histone_single_long_p, histone_single_raw,
-   histone_single_unmod, single_p)
+rm(MCF7_histones, histone_frag, histone_frag_raw,
+   histone_single_long, histone_single_raw,
+   histone_single_unmod)
 ```
 
 # 4. Disease enrichment
@@ -392,28 +396,74 @@ We next print a list of proteins in the four intersecting areas for further inve
 
 ```{r GDA-list, results = "asis"}
 # Print the list of proteins in each intersection
-cat(paste("**ER breast cancer/Phospho:** ", paste(sort(intersect(GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**ER breast cancer/Total:** ", paste(sort(intersect(GDA_ERBC$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Total/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**ER breast cancer/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
+ERBC_intersections <- data.frame("Intersection" = character(),
+                                 "Hits" = character(),
+                                 stringsAsFactors = FALSE)
+ERBC_intersections <- ERBC_intersections %>%
+  add_row("Intersection" = "ER breast cancer/Phospho",
+          "Hits" = paste(sort(intersect(GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "ER breast cancer/Total",
+          "Hits" = paste(sort(intersect(GDA_ERBC$gene_symbol, total_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Total/Phospho",
+          "Hits" = paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "ER breast cancer/Phospho/Total",
+          "Hits" = paste(sort(intersect(intersect(
+            GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2),
+            total_FC$SYMBOL2)), collapse = ", "))
+
+knitr::kable(ERBC_intersections, caption = "ERBC intersections")
 ```
 
 ```{r GDA-list-HT, results = "asis", collapse = TRUE}
-cat(paste("**Hypertension/Phospho:** ", paste(sort(intersect(GDA_HT$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Hypertension/Total:** ", paste(sort(intersect(GDA_HT$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Total/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Hypertension/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_HT$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
+HT_intersections <- data.frame("Intersection" = character(),
+                                 "Hits" = character(),
+                                 stringsAsFactors = FALSE)
+HT_intersections <- HT_intersections %>%
+  add_row("Intersection" = "Hypertension/Phospho",
+          "Hits" = paste(sort(intersect(GDA_HT$gene_symbol, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Hypertension/Total",
+          "Hits" = paste(sort(intersect(GDA_HT$gene_symbol, total_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Total/Phospho",
+          "Hits" = paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Hypertension/Phospho/Total",
+          "Hits" = paste(sort(intersect(intersect(
+            GDA_HT$gene_symbol, phospho_FC$SYMBOL2),
+            total_FC$SYMBOL2)), collapse = ", "))
+
+knitr::kable(HT_intersections, caption = "Hypertension intersections")
 ```
 
 ```{r GDA-list-OvCa, results = "asis", collapse = TRUE}
-cat(paste("**Ovarian cancer/Phospho:** ", paste(sort(intersect(GDA_OvCa$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Ovarian cancer/Total:** ", paste(sort(intersect(GDA_OvCa$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Total/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Ovarian cancer/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_OvCa$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
+OvCa_intersections <- data.frame("Intersection" = character(),
+                                 "Hits" = character(),
+                                 stringsAsFactors = FALSE)
+OvCa_intersections <- OvCa_intersections %>%
+  add_row("Intersection" = "Ovarian cancer/Phospho",
+          "Hits" = paste(sort(intersect(GDA_OvCa$gene_symbol, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Ovarian cancer/Total",
+          "Hits" = paste(sort(intersect(GDA_OvCa$gene_symbol, total_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Total/Phospho",
+          "Hits" = paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Ovarian cancer/Phospho/Total",
+          "Hits" = paste(sort(intersect(intersect(
+            GDA_OvCa$gene_symbol, phospho_FC$SYMBOL2),
+            total_FC$SYMBOL2)), collapse = ", "))
+
+knitr::kable(OvCa_intersections, caption = "Ovarian cancer intersections")
 ```
+
 ```{r clear-4}
 # Clearing large variables
-rm(GDA_ERBC, GDA_HT, GDA_OvCa)
+rm(GDA_ERBC, GDA_HT, GDA_OvCa, ERBC_intersections, HT_intersections, OvCa_intersections)
 ```
 
 

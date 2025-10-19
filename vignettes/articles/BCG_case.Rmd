@@ -1,6 +1,10 @@
 ---
 title: "BCG case"
 bibliography: "references.bib"
+output:
+  html_document:
+    code_folding: show
+    code_download: true
 ---
 This pipeline is intended for use with three levels of proteomics data: total proteome, phosphoproteome, and histone proteome. See @Schaefer2024 for more detail on the total and histone proteome; phosphoproteome data is from @Choudhary2020. Total and phosphoproteome data are designed to be input as an Excel sheet from Proteome Discoverer, and the histone data are the aggregated ratios from EpiProfile (@Yuan2018).
 
@@ -419,6 +423,7 @@ volcano_epi(df = histone_single_p, fc_col = "log2(FC)",
             p_col = "P value", label_col = "PTM") +
   labs(title = "Volcano plot", x = "log2(FC)", y = "-log10(P-value)")
 ```
+
 ```{r clear-3}
 # Clearing large variables
 rm(THP1_histones, histone_frag, histone_frag_raw, histone_p,
@@ -477,31 +482,78 @@ We next print a list of proteins in the four intersecting areas for further inve
 
 ```{r GDA-list, results = "asis"}
 # Print the list of proteins in each intersection
-cat(paste("**NMIBC/Phospho:** ", paste(sort(intersect(GDA_BlCa$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**NMIBC/Total:** ", paste(sort(intersect(GDA_BlCa$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Total/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**NMIBC/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_BlCa$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
+BlCa_intersections <- data.frame("Intersection" = character(),
+                                 "Hits" = character(),
+                                 stringsAsFactors = FALSE)
+BlCa_intersections <- BlCa_intersections %>%
+  add_row("Intersection" = "Bladder cancer/Phospho",
+          "Hits" = paste(sort(intersect(GDA_BlCa$gene_symbol, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Bladder cancer/Total",
+          "Hits" = paste(sort(intersect(GDA_BlCa$gene_symbol, total_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Total/Phospho",
+          "Hits" = paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Bladder cancer/Phospho/Total",
+          "Hits" = paste(sort(intersect(intersect(
+            GDA_BlCa$gene_symbol, phospho_FC$SYMBOL2),
+            total_FC$SYMBOL2)), collapse = ", "))
+
+knitr::kable(BlCa_intersections, caption = "Bladder cancer intersections")
 ```
 
 ```{r GDA-list-melanoma, results = "asis", collapse = TRUE}
-cat(paste("**Melanoma/Phospho:** ", paste(sort(intersect(GDA_melanoma$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Melanoma/Total:** ", paste(sort(intersect(GDA_melanoma$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Melanoma/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Melanoma/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_melanoma$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
+melanoma_intersections <- data.frame("Intersection" = character(),
+                                 "Hits" = character(),
+                                 stringsAsFactors = FALSE)
+melanoma_intersections <- melanoma_intersections %>%
+  add_row("Intersection" = "Melanoma/Phospho",
+          "Hits" = paste(sort(intersect(GDA_melanoma$gene_symbol,
+                                        phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Melanoma/Total",
+          "Hits" = paste(sort(intersect(GDA_melanoma$gene_symbol,
+                                        total_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Total/Phospho",
+          "Hits" = paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Melanoma/Phospho/Total",
+          "Hits" = paste(sort(intersect(intersect(
+            GDA_melanoma$gene_symbol, phospho_FC$SYMBOL2),
+            total_FC$SYMBOL2)), collapse = ", "))
+
+knitr::kable(melanoma_intersections, caption = "Melanoma intersections")
 ```
 
 ```{r GDA-list-RSV, results = "asis", collapse = TRUE}
-cat(paste("**RSV/Phospho:** ", paste(sort(intersect(GDA_RSV$gene_symbol, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**RSV/Total:** ", paste(sort(intersect(GDA_RSV$gene_symbol, total_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**Total/Phospho:** ", paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)), collapse = ", ")))
-cat(paste("**RSV/Phospho/Total:** ", paste(sort(intersect(intersect(GDA_RSV$gene_symbol, phospho_FC$SYMBOL2), total_FC$SYMBOL2)), collapse = ", ")))
+RSV_intersections <- data.frame("Intersection" = character(),
+                                 "Hits" = character(),
+                                 stringsAsFactors = FALSE)
+RSV_intersections <- RSV_intersections %>%
+  add_row("Intersection" = "RSV/Phospho",
+          "Hits" = paste(sort(intersect(GDA_RSV$gene_symbol, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "RSV/Total",
+          "Hits" = paste(sort(intersect(GDA_RSV$gene_symbol, total_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "Total/Phospho",
+          "Hits" = paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)),
+                         collapse = ", ")) %>% 
+  add_row("Intersection" = "RSV/Phospho/Total",
+          "Hits" = paste(sort(intersect(intersect(
+            GDA_RSV$gene_symbol, phospho_FC$SYMBOL2),
+            total_FC$SYMBOL2)), collapse = ", "))
+
+knitr::kable(RSV_intersections, caption = "RSV intersections")
 ```
 
 
 
 ```{r clear-4}
 # Clearing large variables
-rm(GDA_BlCa, GDA_melanoma, GDA_RSV)
+rm(GDA_BlCa, GDA_melanoma, GDA_RSV, BlCa_intersections, melanoma_intersections, RSV_intersections)
 ```
 
 
@@ -660,6 +712,7 @@ ggplot(sig_network, aes(x = Complex, y = Symbol, fill = PTM)) +
   scale_y_discrete(limits = rev) +
   labs(title = "Network bins")
 ```
+
 ## 5.1 Complex and member identification
 For future research use, we generate multiple tables containing the identified complexes, members, common targets, and identified PTMs.
 
