@@ -586,73 +586,184 @@ just retrieved.</p>
 further investigation in our disease of interest.</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Print the list of proteins in each intersection</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**NMIBC/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_BlCa</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>NMIBC/Phospho:</strong> BRAF, NRAS, RAF1, RB1, TYMP</p>
+<span><span class="va">BlCa_intersections</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                                 <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                                 stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">BlCa_intersections</span> <span class="op">&lt;-</span> <span class="va">BlCa_intersections</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"Bladder cancer/Phospho"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_BlCa</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                         collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"Bladder cancer/Total"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_BlCa</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                         collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"Total/Phospho"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                         collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"Bladder cancer/Phospho/Total"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span></span>
+<span>            <span class="va">GDA_BlCa</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>,</span>
+<span>            <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">BlCa_intersections</span>, caption <span class="op">=</span> <span class="st">"Bladder cancer intersections"</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Bladder cancer intersections</caption>
+<colgroup>
+<col width="4%">
+<col width="95%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Intersection</th>
+<th align="left">Hits</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Bladder cancer/Phospho</td>
+<td align="left">BRAF, NRAS, RAF1, RB1, TYMP</td>
+</tr>
+<tr class="even">
+<td align="left">Bladder cancer/Total</td>
+<td align="left">MMP9, TYMP</td>
+</tr>
+<tr class="odd">
+<td align="left">Total/Phospho</td>
+<td align="left">ACOX1, ACSL1, ALDH2, ANKZF1, ATG16L1, BST2, CHMP7,
+CMPK2, CNP, DDI2, DERL1, DTX3L, EIF2AK2, EMILIN2, EYA3, FKBP8, FTL,
+GBP1, GRN, HELZ2, HMBS, HMOX1, ICAM1, IFI16, IFI44, IFIH1, IFIT1, IFIT2,
+IFIT3, INPP5F, ISG15, LIPA, LSM3, LYSMD2, MAT2B, MBD3, MOB1B, MTMR2,
+MX1, MX2, NAGK, NUP37, OAS1, OAS3, OASL, OSBPL11, PARP14, PEA15, PKIB,
+PML, PNPT1, PPP1R18, RAB13, RAP2C, RBBP6, RIGI, RNF213, RRM1, RSAD2,
+RTN1, SAMD9, SEPHS1, SERPINB1, SIRPA, SIRT2, SLFN5, SNRPB, SNRPG,
+SRSF10, STAT1, STAT2, STRADA, SULT1A1, TAP1, TAP2, TAPBP, TOR1AIP2,
+TUBA1A, TYMP, UBE2D3, UBE2L6, VKORC1</td>
+</tr>
+<tr class="even">
+<td align="left">Bladder cancer/Phospho/Total</td>
+<td align="left">TYMP</td>
+</tr>
+</tbody>
+</table>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**NMIBC/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_BlCa</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>NMIBC/Total:</strong> MMP9, TYMP</p>
+<code class="sourceCode R"><span><span class="va">melanoma_intersections</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                                 <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                                 stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">melanoma_intersections</span> <span class="op">&lt;-</span> <span class="va">melanoma_intersections</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"Melanoma/Phospho"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_melanoma</span><span class="op">$</span><span class="va">gene_symbol</span>,</span>
+<span>                                        <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                         collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"Melanoma/Total"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_melanoma</span><span class="op">$</span><span class="va">gene_symbol</span>,</span>
+<span>                                        <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                         collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"Total/Phospho"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                         collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"Melanoma/Phospho/Total"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span></span>
+<span>            <span class="va">GDA_melanoma</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>,</span>
+<span>            <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">melanoma_intersections</span>, caption <span class="op">=</span> <span class="st">"Melanoma intersections"</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Melanoma intersections</caption>
+<colgroup>
+<col width="3%">
+<col width="96%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Intersection</th>
+<th align="left">Hits</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Melanoma/Phospho</td>
+<td align="left">ACD, ANAPC1, BAP1, BARD1, BRAF, BRCA1, CHEK2, KANSL1,
+MITF, NRAS, PALB2, RABL3, RAF1, RECQL4, STK11, TERF2IP, ZEB2</td>
+</tr>
+<tr class="even">
+<td align="left">Melanoma/Total</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Total/Phospho</td>
+<td align="left">ACOX1, ACSL1, ALDH2, ANKZF1, ATG16L1, BST2, CHMP7,
+CMPK2, CNP, DDI2, DERL1, DTX3L, EIF2AK2, EMILIN2, EYA3, FKBP8, FTL,
+GBP1, GRN, HELZ2, HMBS, HMOX1, ICAM1, IFI16, IFI44, IFIH1, IFIT1, IFIT2,
+IFIT3, INPP5F, ISG15, LIPA, LSM3, LYSMD2, MAT2B, MBD3, MOB1B, MTMR2,
+MX1, MX2, NAGK, NUP37, OAS1, OAS3, OASL, OSBPL11, PARP14, PEA15, PKIB,
+PML, PNPT1, PPP1R18, RAB13, RAP2C, RBBP6, RIGI, RNF213, RRM1, RSAD2,
+RTN1, SAMD9, SEPHS1, SERPINB1, SIRPA, SIRT2, SLFN5, SNRPB, SNRPG,
+SRSF10, STAT1, STAT2, STRADA, SULT1A1, TAP1, TAP2, TAPBP, TOR1AIP2,
+TUBA1A, TYMP, UBE2D3, UBE2L6, VKORC1</td>
+</tr>
+<tr class="even">
+<td align="left">Melanoma/Phospho/Total</td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Total/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Total/Phospho:</strong> ACOX1, ACSL1, ALDH2, ANKZF1, ATG16L1,
-BST2, CHMP7, CMPK2, CNP, DDI2, DERL1, DTX3L, EIF2AK2, EMILIN2, EYA3,
-FKBP8, FTL, GBP1, GRN, HELZ2, HMBS, HMOX1, ICAM1, IFI16, IFI44, IFIH1,
-IFIT1, IFIT2, IFIT3, INPP5F, ISG15, LIPA, LSM3, LYSMD2, MAT2B, MBD3,
-MOB1B, MTMR2, MX1, MX2, NAGK, NUP37, OAS1, OAS3, OASL, OSBPL11, PARP14,
-PEA15, PKIB, PML, PNPT1, PPP1R18, RAB13, RAP2C, RBBP6, RIGI, RNF213,
-RRM1, RSAD2, RTN1, SAMD9, SEPHS1, SERPINB1, SIRPA, SIRT2, SLFN5, SNRPB,
-SNRPG, SRSF10, STAT1, STAT2, STRADA, SULT1A1, TAP1, TAP2, TAPBP,
-TOR1AIP2, TUBA1A, TYMP, UBE2D3, UBE2L6, VKORC1</p>
+<code class="sourceCode R"><span><span class="va">RSV_intersections</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                                 <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                                 stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">RSV_intersections</span> <span class="op">&lt;-</span> <span class="va">RSV_intersections</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"RSV/Phospho"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_RSV</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                         collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"RSV/Total"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_RSV</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                         collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"Total/Phospho"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                         collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_row</span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="st">"RSV/Phospho/Total"</span>,</span>
+<span>          <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span></span>
+<span>            <span class="va">GDA_RSV</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>,</span>
+<span>            <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">RSV_intersections</span>, caption <span class="op">=</span> <span class="st">"RSV intersections"</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>RSV intersections</caption>
+<colgroup>
+<col width="3%">
+<col width="96%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Intersection</th>
+<th align="left">Hits</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">RSV/Phospho</td>
+<td align="left">CUL5, EIF2AK2, ELOC, EP300, IFIH1, ISG15, MAP1B, MED1,
+MED12, MED26, RIGI, STAT2, TRIM25, UBE2L6</td>
+</tr>
+<tr class="even">
+<td align="left">RSV/Total</td>
+<td align="left">CD14, EIF2AK2, IFIH1, ISG15, OAS2, RIGI, STAT2, TLR2,
+UBE2L6</td>
+</tr>
+<tr class="odd">
+<td align="left">Total/Phospho</td>
+<td align="left">ACOX1, ACSL1, ALDH2, ANKZF1, ATG16L1, BST2, CHMP7,
+CMPK2, CNP, DDI2, DERL1, DTX3L, EIF2AK2, EMILIN2, EYA3, FKBP8, FTL,
+GBP1, GRN, HELZ2, HMBS, HMOX1, ICAM1, IFI16, IFI44, IFIH1, IFIT1, IFIT2,
+IFIT3, INPP5F, ISG15, LIPA, LSM3, LYSMD2, MAT2B, MBD3, MOB1B, MTMR2,
+MX1, MX2, NAGK, NUP37, OAS1, OAS3, OASL, OSBPL11, PARP14, PEA15, PKIB,
+PML, PNPT1, PPP1R18, RAB13, RAP2C, RBBP6, RIGI, RNF213, RRM1, RSAD2,
+RTN1, SAMD9, SEPHS1, SERPINB1, SIRPA, SIRT2, SLFN5, SNRPB, SNRPG,
+SRSF10, STAT1, STAT2, STRADA, SULT1A1, TAP1, TAP2, TAPBP, TOR1AIP2,
+TUBA1A, TYMP, UBE2D3, UBE2L6, VKORC1</td>
+</tr>
+<tr class="even">
+<td align="left">RSV/Phospho/Total</td>
+<td align="left">EIF2AK2, IFIH1, ISG15, RIGI, STAT2, UBE2L6</td>
+</tr>
+</tbody>
+</table>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**NMIBC/Phospho/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_BlCa</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>NMIBC/Phospho/Total:</strong> TYMP</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Melanoma/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_melanoma</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Melanoma/Phospho:</strong> ACD, ANAPC1, BAP1, BARD1, BRAF,
-BRCA1, CHEK2, KANSL1, MITF, NRAS, PALB2, RABL3, RAF1, RECQL4, STK11,
-TERF2IP, ZEB2</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Melanoma/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_melanoma</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Melanoma/Total:</strong></p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Melanoma/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Melanoma/Phospho:</strong> ACOX1, ACSL1, ALDH2, ANKZF1,
-ATG16L1, BST2, CHMP7, CMPK2, CNP, DDI2, DERL1, DTX3L, EIF2AK2, EMILIN2,
-EYA3, FKBP8, FTL, GBP1, GRN, HELZ2, HMBS, HMOX1, ICAM1, IFI16, IFI44,
-IFIH1, IFIT1, IFIT2, IFIT3, INPP5F, ISG15, LIPA, LSM3, LYSMD2, MAT2B,
-MBD3, MOB1B, MTMR2, MX1, MX2, NAGK, NUP37, OAS1, OAS3, OASL, OSBPL11,
-PARP14, PEA15, PKIB, PML, PNPT1, PPP1R18, RAB13, RAP2C, RBBP6, RIGI,
-RNF213, RRM1, RSAD2, RTN1, SAMD9, SEPHS1, SERPINB1, SIRPA, SIRT2, SLFN5,
-SNRPB, SNRPG, SRSF10, STAT1, STAT2, STRADA, SULT1A1, TAP1, TAP2, TAPBP,
-TOR1AIP2, TUBA1A, TYMP, UBE2D3, UBE2L6, VKORC1</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Melanoma/Phospho/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_melanoma</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Melanoma/Phospho/Total:</strong></p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**RSV/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_RSV</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>RSV/Phospho:</strong> CUL5, EIF2AK2, ELOC, EP300, IFIH1,
-ISG15, MAP1B, MED1, MED12, MED26, RIGI, STAT2, TRIM25, UBE2L6</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**RSV/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_RSV</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>RSV/Total:</strong> CD14, EIF2AK2, IFIH1, ISG15, OAS2, RIGI,
-STAT2, TLR2, UBE2L6</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**Total/Phospho:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Total/Phospho:</strong> ACOX1, ACSL1, ALDH2, ANKZF1, ATG16L1,
-BST2, CHMP7, CMPK2, CNP, DDI2, DERL1, DTX3L, EIF2AK2, EMILIN2, EYA3,
-FKBP8, FTL, GBP1, GRN, HELZ2, HMBS, HMOX1, ICAM1, IFI16, IFI44, IFIH1,
-IFIT1, IFIT2, IFIT3, INPP5F, ISG15, LIPA, LSM3, LYSMD2, MAT2B, MBD3,
-MOB1B, MTMR2, MX1, MX2, NAGK, NUP37, OAS1, OAS3, OASL, OSBPL11, PARP14,
-PEA15, PKIB, PML, PNPT1, PPP1R18, RAB13, RAP2C, RBBP6, RIGI, RNF213,
-RRM1, RSAD2, RTN1, SAMD9, SEPHS1, SERPINB1, SIRPA, SIRT2, SLFN5, SNRPB,
-SNRPG, SRSF10, STAT1, STAT2, STRADA, SULT1A1, TAP1, TAP2, TAPBP,
-TOR1AIP2, TUBA1A, TYMP, UBE2D3, UBE2L6, VKORC1</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"**RSV/Phospho/Total:** "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">GDA_RSV</span><span class="op">$</span><span class="va">gene_symbol</span>, <span class="va">phospho_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span>, <span class="va">total_FC</span><span class="op">$</span><span class="va">SYMBOL2</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><strong>RSV/Phospho/Total:</strong> EIF2AK2, IFIH1, ISG15, RIGI,
-STAT2, UBE2L6</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Clearing large variables</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">GDA_BlCa</span>, <span class="va">GDA_melanoma</span>, <span class="va">GDA_RSV</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">GDA_BlCa</span>, <span class="va">GDA_melanoma</span>, <span class="va">GDA_RSV</span>, <span class="va">BlCa_intersections</span>, <span class="va">melanoma_intersections</span>, <span class="va">RSV_intersections</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="epigenetic-network">5. Epigenetic network<a class="anchor" aria-label="anchor" href="#epigenetic-network"></a>
@@ -665,7 +776,7 @@ is drawn in Python and rendered as an embedded HTML file.</p>
 the MPOInt package, but can be replaced to update or change the database
 by downloading and importing the “Table of all proteins” file on the
 EpiFactors website.</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">genes</span><span class="op">)</span></span>
 <span><span class="va">total_join</span> <span class="op">&lt;-</span> <span class="fu">inner_join</span><span class="op">(</span><span class="va">genes</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">THP1_total_sig</span>, <span class="st">"log2(FC)"</span>, <span class="st">"P value"</span>, <span class="st">"SYMBOL2"</span><span class="op">)</span>, by <span class="op">=</span> <span class="fu">join_by</span><span class="op">(</span><span class="st">"HGNC approved symbol"</span> <span class="op">==</span> <span class="st">"SYMBOL2"</span><span class="op">)</span>, multiple <span class="op">=</span> <span class="st">"any"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"Source"</span> <span class="op">=</span> <span class="st">"Total"</span><span class="op">)</span></span>
@@ -681,7 +792,7 @@ EpiFactors website.</p>
 <span><span class="co"># Assigning differential expression identifiers</span></span>
 <span><span class="va">joined_data</span><span class="op">$</span><span class="va">Diff</span> <span class="op">&lt;-</span> <span class="fu">case_when</span><span class="op">(</span><span class="va">joined_data</span><span class="op">$</span><span class="va">`log2(FC)`</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"Up"</span>,</span>
 <span>                             <span class="va">joined_data</span><span class="op">$</span><span class="va">`log2(FC)`</span> <span class="op">&lt;</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"Down"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plotting all relevant proteins from the two combined datasets</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">joined_data</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">`log2(FC)`</span>, y <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">`P value`</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_point</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>color <span class="op">=</span> <span class="va">Source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -697,7 +808,7 @@ EpiFactors website.</p>
 <span><span class="co">#&gt; Warning: ggrepel: 100 unlabeled data points (too many overlaps). Consider</span></span>
 <span><span class="co">#&gt; increasing max.overlaps</span></span></code></pre></div>
 <p><img src="BCG_case_files/figure-html/network-proteins-1.png" width="700"></p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Formatting histone targets</span></span>
 <span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="fu">str_flatten_comma</span><span class="op">(</span><span class="fu">str_unique</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">joined_data</span><span class="op">$</span><span class="va">Product</span>, <span class="va">joined_data</span><span class="op">$</span><span class="va">`Target entity`</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, <span class="st">", "</span>, <span class="st">"|"</span><span class="op">)</span></span>
 <span></span>
@@ -727,7 +838,7 @@ EpiFactors website.</p>
 <span><span class="co">#&gt; Warning: ggrepel: 31 unlabeled data points (too many overlaps). Consider</span></span>
 <span><span class="co">#&gt; increasing max.overlaps</span></span></code></pre></div>
 <p><img src="BCG_case_files/figure-html/network-histone-import-1.png" width="700"></p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Pivoting and formatting the gene list</span></span>
 <span><span class="va">genes_pivoted</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">genes</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HGNC approved symbol"</span>, <span class="st">"Protein complex"</span>, <span class="st">"Target entity"</span>, <span class="st">"Product"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="st">"Symbol"</span> <span class="op">=</span> <span class="st">"HGNC approved symbol"</span>, <span class="st">"Complex"</span> <span class="op">=</span> <span class="st">"Protein complex"</span>, <span class="st">"Target"</span> <span class="op">=</span> <span class="st">"Target entity"</span>, <span class="st">"Product"</span> <span class="op">=</span> <span class="st">"Product"</span><span class="op">)</span></span>
 <span></span>
@@ -749,7 +860,7 @@ EpiFactors website.</p>
 <span>                                                      <span class="st">"log2(FC)"</span>, <span class="st">"P value"</span>, <span class="st">"Source"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>                                by <span class="op">=</span> <span class="fu">join_by</span><span class="op">(</span><span class="st">"Symbol"</span> <span class="op">==</span> <span class="st">"HGNC approved symbol"</span><span class="op">)</span>,</span>
 <span>                                relationship <span class="op">=</span> <span class="st">"many-to-many"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Getting the lists into the right format for the igraph visualization</span></span>
 <span><span class="va">genes_histone_pivoted</span> <span class="op">&lt;-</span> <span class="fu">pivot_longer</span><span class="op">(</span><span class="va">genes_data_joined</span>, cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Target"</span>, <span class="st">"Product"</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>             values_to <span class="op">=</span> <span class="st">"PTM"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span></span>
@@ -768,7 +879,7 @@ EpiFactors website.</p>
 <span><span class="co"># Ensuring no NA values remain, replacing "#" with a clearer identifier</span></span>
 <span><span class="va">genes_histone_joined</span><span class="op">[</span><span class="va">genes_histone_joined</span> <span class="op">==</span> <span class="st">"#"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"No ID"</span></span>
 <span><span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">Complex</span> <span class="op">&lt;-</span> <span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">Complex</span> <span class="op">%&gt;%</span>  <span class="fu">replace_na</span><span class="op">(</span><span class="st">"No ID"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generating a dataframe for edges and a dataframe for unique vertices with metadata</span></span>
 <span><span class="va">complexes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">Complex</span><span class="op">)</span></span>
 <span><span class="va">n_complexes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">complexes</span><span class="op">)</span><span class="op">)</span></span>
@@ -803,7 +914,7 @@ EpiFactors website.</p>
 <span><span class="va">edges_df</span> <span class="op">&lt;-</span> <span class="fu">drop_na</span><span class="op">(</span><span class="va">edges_df</span>, <span class="va">Diff</span><span class="op">)</span></span></code></pre></div>
 <p>This alternative visualization shows the members of the identified
 complexes without connections.</p>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sig_network</span> <span class="op">&lt;-</span> <span class="fu">distinct</span><span class="op">(</span><span class="fu">group_by</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">edges_df</span>, <span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span><span class="op">)</span>, <span class="va">Complex</span><span class="op">)</span>, <span class="va">Symbol</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">sig_network</span><span class="op">[</span><span class="st">"weight"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span><span class="va">sig_network</span><span class="op">$</span><span class="va">Complex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">sig_network</span><span class="op">$</span><span class="va">Complex</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">sig_network</span><span class="op">$</span><span class="va">Complex</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -815,11 +926,13 @@ complexes without connections.</p>
 <span>  <span class="fu">scale_fill_viridis_d</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">scale_y_discrete</span><span class="op">(</span>limits <span class="op">=</span> <span class="va">rev</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Network bins"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="BCG_case_files/figure-html/network-bars-1.png" width="700">
-## 5.1 Complex and member identification For future research use, we
-generate multiple tables containing the identified complexes, members,
-common targets, and identified PTMs.</p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<p><img src="BCG_case_files/figure-html/network-bars-1.png" width="700"></p>
+<div class="section level3">
+<h3 id="complex-and-member-identification">5.1 Complex and member identification<a class="anchor" aria-label="anchor" href="#complex-and-member-identification"></a>
+</h3>
+<p>For future research use, we generate multiple tables containing the
+identified complexes, members, common targets, and identified PTMs.</p>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Identified complexes</span></span>
 <span><span class="va">final_complexes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">vertices_df</span>, <span class="va">vertices_df</span><span class="op">$</span><span class="va">Source</span> <span class="op">!=</span> <span class="st">"Histone"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">drop_na</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">final_complex_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">final_complexes</span><span class="op">$</span><span class="va">Complex</span><span class="op">)</span><span class="op">)</span></span>
@@ -831,7 +944,7 @@ Menin-associated_HMT, MLL-HCF, MLL2/3, MLL4/WBP7, nBAF, npBAF, NSL,
 NuA4, NuRD, PBAF, PPP4C-PPP4R2-PPP4R3A, PR-DUB, PRC1, PRC2, RING2-FBRS,
 RING2-L3MBTL2, SWI/SNF BRM-BRG1, SWI/SNF-like EPAFB, SWI/SNF-like_EPAFa,
 WINAC</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># List members of each</span></span>
 <span><span class="va">final_members</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"Complex"</span> <span class="op">=</span> <span class="st">""</span>, <span class="st">"Members"</span> <span class="op">=</span> <span class="st">""</span>, <span class="st">"PTMs"</span> <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span>
 <span></span>
@@ -1019,7 +1132,7 @@ H3K4me2, H3K4me3</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Differential PTMs</span></span>
 <span><span class="va">final_PTMs</span> <span class="op">&lt;-</span> <span class="fu">distinct</span><span class="op">(</span><span class="va">final_complexes</span>, <span class="fu">pick</span><span class="op">(</span><span class="va">PTM</span>, <span class="va">Diff</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="st">"Differential expression"</span> <span class="op">=</span> <span class="st">"Diff"</span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">final_PTMs</span><span class="op">)</span></span></code></pre></div>
@@ -1187,7 +1300,7 @@ H3K4me2, H3K4me3</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Genes</span></span>
 <span><span class="va">final_proteins</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">final_complexes</span><span class="op">$</span><span class="va">Symbol</span><span class="op">)</span></span>
 <span><span class="va">final_func</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">genes</span>, <span class="va">genes</span><span class="op">$</span><span class="va">`HGNC approved symbol`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">final_proteins</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"UniProt ID (human)"</span><span class="op">)</span><span class="op">)</span></span>
@@ -1407,13 +1520,14 @@ MLL4/WBP7, COMPASS-like MLL3,4</td>
 </tr>
 </tbody>
 </table>
+</div>
 <div class="section level3">
 <h3 id="python-visualization">5.2 Python visualization<a class="anchor" aria-label="anchor" href="#python-visualization"></a>
 </h3>
 <p>Finally, we create an interactive network using Python via the
 <code>reticulate</code> package. This allows a dynamic visualization
 that can be refined and filtered to generate different views.</p>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Shapes</span> <span class="op">&lt;-</span> <span class="fu">case_when</span><span class="op">(</span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Diff</span> <span class="op">==</span> <span class="st">"Up"</span> <span class="op">~</span> <span class="st">"triangle"</span>,</span>
 <span>                             <span class="va">vertices_df</span><span class="op">$</span><span class="va">Diff</span> <span class="op">==</span> <span class="st">"Down"</span> <span class="op">~</span> <span class="st">"triangleDown"</span>,</span>
 <span>                          <span class="va">vertices_df</span><span class="op">$</span><span class="va">Diff</span> <span class="op">==</span> <span class="st">"0"</span> <span class="op">~</span> <span class="st">"ellipse"</span><span class="op">)</span></span>
@@ -1424,35 +1538,35 @@ that can be refined and filtered to generate different views.</p>
 <span><span class="va">sig_network_py</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">vertices_df</span>, <span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span> <span class="op">|</span> <span class="va">Source</span> <span class="op">==</span> <span class="st">"Histone"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">r_to_py</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">edges_py</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">edges_df</span>, <span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span> <span class="op">|</span> <span class="va">Source</span> <span class="op">==</span> <span class="st">"Histone"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">r_to_py</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb55"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd, networkx <span class="im">as</span> nx</span>
-<span id="cb55-2"><a href="#cb55-2" tabindex="-1"></a><span class="im">from</span> pyvis.network <span class="im">import</span> Network</span></code></pre></div>
-<div class="sourceCode" id="cb56"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" tabindex="-1"></a><span class="co"># Create NetworkX graph object</span></span>
-<span id="cb56-2"><a href="#cb56-2" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
-<span id="cb56-3"><a href="#cb56-3" tabindex="-1"></a></span>
-<span id="cb56-4"><a href="#cb56-4" tabindex="-1"></a><span class="co"># Generate a nested dictionary/tuple with the node of interest ("Symbol") and </span></span>
-<span id="cb56-5"><a href="#cb56-5" tabindex="-1"></a><span class="co"># the relevant attributes (shape and complex)</span></span>
-<span id="cb56-6"><a href="#cb56-6" tabindex="-1"></a>node_list <span class="op">=</span> []</span>
-<span id="cb56-7"><a href="#cb56-7" tabindex="-1"></a><span class="cf">for</span> i, row <span class="kw">in</span> r.sig_network_py.iterrows():</span>
-<span id="cb56-8"><a href="#cb56-8" tabindex="-1"></a>  node_list.append((row[<span class="st">"Symbol"</span>], {<span class="st">"color"</span>: row.Colors, <span class="st">"Complex"</span>: row.Complex, <span class="st">"shape"</span>: row.Shapes}))</span>
-<span id="cb56-9"><a href="#cb56-9" tabindex="-1"></a>G.add_nodes_from(node_list)</span>
-<span id="cb56-10"><a href="#cb56-10" tabindex="-1"></a></span>
-<span id="cb56-11"><a href="#cb56-11" tabindex="-1"></a><span class="co"># Generate a tuple for edges connecting proteins with PTMs</span></span>
-<span id="cb56-12"><a href="#cb56-12" tabindex="-1"></a>edge_tup <span class="op">=</span> []</span>
-<span id="cb56-13"><a href="#cb56-13" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(r.edges_py[<span class="st">"Symbol"</span>])):</span>
-<span id="cb56-14"><a href="#cb56-14" tabindex="-1"></a>  edge_tup.append((r.edges_py[<span class="st">"Symbol"</span>][i], r.edges_py[<span class="st">"PTM"</span>][i]))</span>
-<span id="cb56-15"><a href="#cb56-15" tabindex="-1"></a>G.add_edges_from(edge_tup)</span>
-<span id="cb56-16"><a href="#cb56-16" tabindex="-1"></a></span>
-<span id="cb56-17"><a href="#cb56-17" tabindex="-1"></a><span class="co"># Remove self-loops</span></span>
-<span id="cb56-18"><a href="#cb56-18" tabindex="-1"></a>G.remove_edges_from(nx.selfloop_edges(G))</span>
-<span id="cb56-19"><a href="#cb56-19" tabindex="-1"></a></span>
-<span id="cb56-20"><a href="#cb56-20" tabindex="-1"></a><span class="co"># Now remove nodes without edges</span></span>
-<span id="cb56-21"><a href="#cb56-21" tabindex="-1"></a>lone_nodes <span class="op">=</span> [node <span class="cf">for</span> node, degree <span class="kw">in</span> G.degree() <span class="cf">if</span> degree <span class="op">==</span> <span class="dv">0</span>]</span>
-<span id="cb56-22"><a href="#cb56-22" tabindex="-1"></a>G.remove_nodes_from(lone_nodes)</span></code></pre></div>
-<div class="sourceCode" id="cb57"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" tabindex="-1"></a><span class="co"># To change the parameters of what's being graphed, adjust the initial call to Network()</span></span>
-<span id="cb57-2"><a href="#cb57-2" tabindex="-1"></a>net <span class="op">=</span> Network(height<span class="op">=</span><span class="st">"900px"</span>, notebook <span class="op">=</span> <span class="va">True</span>, select_menu <span class="op">=</span> <span class="va">True</span>, cdn_resources <span class="op">=</span> <span class="st">"in_line"</span>)</span>
-<span id="cb57-3"><a href="#cb57-3" tabindex="-1"></a>net.from_nx(G)</span>
-<span id="cb57-4"><a href="#cb57-4" tabindex="-1"></a>net.save_graph(<span class="st">"networkx-pyvis-BCG.html"</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd, networkx <span class="im">as</span> nx</span>
+<span id="cb46-2"><a href="#cb46-2" tabindex="-1"></a><span class="im">from</span> pyvis.network <span class="im">import</span> Network</span></code></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="co"># Create NetworkX graph object</span></span>
+<span id="cb47-2"><a href="#cb47-2" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb47-3"><a href="#cb47-3" tabindex="-1"></a></span>
+<span id="cb47-4"><a href="#cb47-4" tabindex="-1"></a><span class="co"># Generate a nested dictionary/tuple with the node of interest ("Symbol") and </span></span>
+<span id="cb47-5"><a href="#cb47-5" tabindex="-1"></a><span class="co"># the relevant attributes (shape and complex)</span></span>
+<span id="cb47-6"><a href="#cb47-6" tabindex="-1"></a>node_list <span class="op">=</span> []</span>
+<span id="cb47-7"><a href="#cb47-7" tabindex="-1"></a><span class="cf">for</span> i, row <span class="kw">in</span> r.sig_network_py.iterrows():</span>
+<span id="cb47-8"><a href="#cb47-8" tabindex="-1"></a>  node_list.append((row[<span class="st">"Symbol"</span>], {<span class="st">"color"</span>: row.Colors, <span class="st">"Complex"</span>: row.Complex, <span class="st">"shape"</span>: row.Shapes}))</span>
+<span id="cb47-9"><a href="#cb47-9" tabindex="-1"></a>G.add_nodes_from(node_list)</span>
+<span id="cb47-10"><a href="#cb47-10" tabindex="-1"></a></span>
+<span id="cb47-11"><a href="#cb47-11" tabindex="-1"></a><span class="co"># Generate a tuple for edges connecting proteins with PTMs</span></span>
+<span id="cb47-12"><a href="#cb47-12" tabindex="-1"></a>edge_tup <span class="op">=</span> []</span>
+<span id="cb47-13"><a href="#cb47-13" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(r.edges_py[<span class="st">"Symbol"</span>])):</span>
+<span id="cb47-14"><a href="#cb47-14" tabindex="-1"></a>  edge_tup.append((r.edges_py[<span class="st">"Symbol"</span>][i], r.edges_py[<span class="st">"PTM"</span>][i]))</span>
+<span id="cb47-15"><a href="#cb47-15" tabindex="-1"></a>G.add_edges_from(edge_tup)</span>
+<span id="cb47-16"><a href="#cb47-16" tabindex="-1"></a></span>
+<span id="cb47-17"><a href="#cb47-17" tabindex="-1"></a><span class="co"># Remove self-loops</span></span>
+<span id="cb47-18"><a href="#cb47-18" tabindex="-1"></a>G.remove_edges_from(nx.selfloop_edges(G))</span>
+<span id="cb47-19"><a href="#cb47-19" tabindex="-1"></a></span>
+<span id="cb47-20"><a href="#cb47-20" tabindex="-1"></a><span class="co"># Now remove nodes without edges</span></span>
+<span id="cb47-21"><a href="#cb47-21" tabindex="-1"></a>lone_nodes <span class="op">=</span> [node <span class="cf">for</span> node, degree <span class="kw">in</span> G.degree() <span class="cf">if</span> degree <span class="op">==</span> <span class="dv">0</span>]</span>
+<span id="cb47-22"><a href="#cb47-22" tabindex="-1"></a>G.remove_nodes_from(lone_nodes)</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" tabindex="-1"></a><span class="co"># To change the parameters of what's being graphed, adjust the initial call to Network()</span></span>
+<span id="cb48-2"><a href="#cb48-2" tabindex="-1"></a>net <span class="op">=</span> Network(height<span class="op">=</span><span class="st">"900px"</span>, notebook <span class="op">=</span> <span class="va">True</span>, select_menu <span class="op">=</span> <span class="va">True</span>, cdn_resources <span class="op">=</span> <span class="st">"in_line"</span>)</span>
+<span id="cb48-3"><a href="#cb48-3" tabindex="-1"></a>net.from_nx(G)</span>
+<span id="cb48-4"><a href="#cb48-4" tabindex="-1"></a>net.save_graph(<span class="st">"networkx-pyvis-BCG.html"</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">htmltools</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/htmltools/reference/renderDocument.html" class="external-link">renderDocument</a></span><span class="op">(</span><span class="fu">htmltools</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/htmltools/reference/htmlTemplate.html" class="external-link">htmlTemplate</a></span><span class="op">(</span><span class="st">"networkx-pyvis-BCG.html"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 
     
