@@ -98,7 +98,7 @@ clean_names <- function(df, label_col, ...){
 
   single_df_long <- single_df_raw %>%
     tidyr::pivot_longer(cols = c("PTM4", "PTM3", "PTM2", "PTM1"), names_to = NULL,
-                 values_to = .data$"single_PTM", values_drop_na = TRUE) %>%
+                 values_to = "single_PTM", values_drop_na = TRUE) %>%
     dplyr::mutate("PTM" = stringr::str_remove(`PTM`, `subset`)) %>%
     tidyr::unite(col = "PTM", c(`PTM`, `single_PTM`), sep = " ", remove = TRUE) %>%
     dplyr::mutate("PTM" = stringr::str_squish(PTM))

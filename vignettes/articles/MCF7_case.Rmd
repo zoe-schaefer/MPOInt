@@ -260,8 +260,7 @@ histone_single_raw <- clean_names(MCF7_histones, "PTM")[[1]]
 histone_frag_raw <- clean_names(MCF7_histones, "PTM")[[2]]
 ```
 
-## 3.1. Individual values
-### 3.1.1. Fragments
+## 3.1. Fragments
 The data available here was already in a legible format, so we do not have to process it extensively.
 
 ```{r histone-frag-process}
@@ -278,7 +277,7 @@ volcano_epi(df = histone_frag, fc_col = "log2(FC)",
   labs(title = "Volcano plot", x = "log2(FC)", y = "-log10(P-value)")
 ```
 
-### 3.1.2. Single
+## 3.2. Single
 This section parses the fragments into single PTMs. Each occurrence is counted individually - for example, H4 4-17 K5acK12acK16ac would be counted as H4K5ac, H4K8ac, and H4K16ac.
 
 ```{r histone-single-process}
