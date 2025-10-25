@@ -138,7 +138,7 @@ Plotting GSEA dot plots can be difficult due to the volume of information includ
 
 ```{r total-enrich-plots, fig.dpi = 300}
 if (nrow(total_GSEA_GO@result) > 0) {
-  dotplot(total_GSEA_GO, showCategory = 20, font.size = rel(1), label_format = 40, title = "GO enrichment",
+  dotplot(total_GSEA_GO, showCategory = 20, font.size = rel(0.8), label_format = 40, title = "GO enrichment",
           split = "ONTOLOGY") + facet_wrap(ONTOLOGY~.sign, scales = "free_y", ncol = 2)
 } else {
   print("Error: no terms enriched under P-value cutoff (total_GSEA_GO)")
@@ -255,25 +255,18 @@ This section processes EpiProfile output into a more readable, user-friendly for
 
 ```{r histone-import-mean}
 data(MCF7_histones)
-histone_frag_raw <- MCF7_histones
-# Creating an overall baseline by averaging the non-cancer cell lines
-histone_frag_raw<- histone_frag_raw %>% mutate("avg std" = apply(pick("293 ave (5 reps)", "HaCAT ave (5 reps)",
-                                    "hESC ave (6 reps)", "HFF ave (7 reps)",
-                                    "Mdm13 ave (5 reps)"), 1, sd))
-histone_frag_raw <- histone_frag_raw %>% 
-  dplyr::select(c("PTM", "MCF7 ave (5 reps)", "MCF7 std", "ctrl ave", "avg std")) %>% 
-  mutate("log2(FC)" = log2(`MCF7 ave (5 reps)`/`ctrl ave`)) %>% 
-  mutate("T score" = NA) %>% 
-  mutate("P value" = NA)
-histone_frag <- histone_frag_raw
-histone_frag <- histone_frag %>%
-  mutate("T score" = (`MCF7 ave (5 reps)` - `ctrl ave`)/(`MCF7 std`/sqrt(5))) %>% 
-  mutate("P value" = pt(q = `T score`, df = 4))
+MCF7_histones <- dplyr::select(MCF7_histones, c("PTM", "MCF7 ave (5 reps)", "293 ave (5 reps)", "HaCAT ave (5 reps)", "hESC ave (6 reps)", "HFF ave (7 reps)", "Mdm13 ave (5 reps)", "MCF7 std"))
+histone_single_raw <- clean_names(MCF7_histones, "PTM")[[1]]
+histone_frag_raw <- clean_names(MCF7_histones, "PTM")[[2]]
 ```
 
 ## 3.1. Individual values
 ### 3.1.1. Fragments
 The data available here was already in a legible format, so we do not have to process it extensively.
+
+```{r histone-frag-process}
+histone_frag <- histone_summary(df = histone_frag_raw, label_col = "PTM", base_cols = c("293 ave (5 reps)", "HaCAT ave (5 reps)", "hESC ave (6 reps)", "HFF ave (7 reps)", "Mdm13 ave (5 reps)"), base_std = NA, target_col = "MCF7 ave (5 reps)", target_std = "MCF7 std")
+```
 
 ```{r fragment-plot}
 # Setting this value - geom_text_repel will only show so many labels at once
@@ -288,61 +281,24 @@ volcano_epi(df = histone_frag, fc_col = "log2(FC)",
 ### 3.1.2. Single
 This section parses the fragments into single PTMs. Each occurrence is counted individually - for example, H4 4-17 K5acK12acK16ac would be counted as H4K5ac, H4K8ac, and H4K16ac.
 
-```{r single-processing, warning = FALSE}
-# warnings silenced - multiple warnings come up if a regex string is empty
-histone_single_raw <- histone_frag_raw
-histone_single_raw <- histone_single_raw[!grepl("\\.", histone_single_raw$PTM),]
-histone_single_unmod <- histone_single_raw[grepl("unmod", histone_single_raw$PTM),]
-histone_single_raw <- histone_single_raw[!grepl("unmod", histone_single_raw$PTM),]
-
-histone_single_raw <- histone_single_raw %>% 
-  mutate("subset" = str_extract(`PTM`, "([^\ ]+$)")) %>% 
-  mutate("PTM4" = str_split_i(`subset`, "(?=K)", i = -1)) %>% 
-  mutate("PTM3" = str_split_i(`subset`, "(?=K)", i = -2)) %>% 
-  mutate("PTM2" = str_split_i(`subset`, "(?=K)", i = -3)) %>% 
-  # add line above for max co-occurring PTMs, then remove
-  mutate("PTM1" = str_remove(`subset`, `PTM2`)) %>% 
-  mutate("PTM1" = str_remove(`PTM1`, `PTM3`)) %>% 
-  mutate("PTM1" = str_remove(`PTM1`, `PTM4`))
-
-histone_single_raw <- replace(histone_single_raw, histone_single_raw == "", NA)
-
-histone_single_long <- histone_single_raw %>% 
-  pivot_longer(cols = c("PTM4", "PTM3", "PTM2", "PTM1"), names_to = NULL,
-               values_to = "single_PTM", values_drop_na = TRUE) %>% 
-  mutate("PTM" = str_remove(`PTM`, `subset`)) %>% 
-  unite(col = "PTM", c(`PTM`, `single_PTM`), sep = " ", remove = TRUE) %>% 
-  mutate("PTM" = str_squish(PTM))
-
-histone_single_long$PTM <- str_remove(histone_single_long$PTM, " .+ ") %>% 
-  str_replace("me1", "me")
-histone_single_long <- bind_rows(histone_single_long, histone_single_unmod)
+```{r histone-single-process}
+histone_single <- histone_summary(df = histone_single_raw, label_col = "PTM", base_cols = c("293 ave (5 reps)", "HaCAT ave (5 reps)", "hESC ave (6 reps)", "HFF ave (7 reps)", "Mdm13 ave (5 reps)"), base_std = NA, target_col = "MCF7 ave (5 reps)", target_std = "MCF7 std")
 ```
 
-```{r single-stats-t}
-histone_single_raw <- histone_single_long %>% 
-  group_by(`PTM`) %>% 
-  summarize("sample ave" = mean(`MCF7 ave (5 reps)`),
-            "sample std" = mean(`MCF7 std`),
-            "ctrl ave" = mean(`ctrl ave`),
-            "avg std" = mean(`avg std`),
-            "T score" = "",
-            "P value" = "") %>% 
-  mutate("log2(FC)" = log2(`sample ave`/`ctrl ave`))
 
-histone_single_p <- histone_single_raw %>% 
-  mutate("T score" = (`sample ave` - `ctrl ave`)/(`sample std`/sqrt(5))) %>% 
-  mutate("P value" = pt(q = `T score`, df = 4))
+```{r fragment-plot-2}
+# Setting this value - geom_text_repel will only show so many labels at once
+# for legibility reasons. Adjust this threshold to show more/fewer points.
+options("ggrepel.max.overlaps" = 20)
 
-histone_single_p$PTM <- str_remove(histone_single_p$PTM, " .+ ") %>% 
-  str_remove("un") %>% 
-  str_replace("me1", "me")
+volcano_epi(df = histone_single, fc_col = "log2(FC)",
+            p_col = "P value", label_col = "PTM") +
+  labs(title = "Volcano plot", x = "log2(FC)", y = "-log10(P-value)")
 ```
+
 ```{r clear-3}
 # Clearing large variables
-rm(MCF7_histones, histone_frag, histone_frag_raw,
-   histone_single_long, histone_single_raw,
-   histone_single_unmod)
+rm(MCF7_histones, histone_frag_raw, histone_single_raw)
 ```
 
 # 4. Disease enrichment
@@ -506,7 +462,7 @@ ggplot(joined_data, aes(x = `log2(FC)`, y = -log10(`P value`))) +
 targets <- str_replace_all(str_flatten_comma(str_unique(c(joined_data$Product, joined_data$`Target entity`))), ", ", "|")
 
 # Filter by that list
-total_histone_int <- filter(histone_single_p, grepl(targets, PTM))
+total_histone_int <- filter(histone_single, grepl(targets, PTM))
 total_histone_int$Diff <- case_when(total_histone_int$`log2(FC)` > 0 ~ "Up",
                              total_histone_int$`log2(FC)` < 0 ~ "Down",
                              .default = "0")

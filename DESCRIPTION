@@ -17,6 +17,8 @@ Imports:
     ggplot2,
     ggrepel,
     rlang,
+    stringr,
+    tibble,
     tidyr
 URL: https://github.com/zoe-schaefer/MPOInt, https://zoe-schaefer.github.io/MPOInt/
 BugReports: https://github.com/zoe-schaefer/MPOInt/issues

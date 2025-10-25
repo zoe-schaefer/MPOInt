@@ -259,40 +259,8 @@ This section processes EpiProfile output into a more readable, user-friendly for
 
 ```{r fragment-histone-processing-names}
 data(THP1_histones)
-histone_frag_raw <- tidyr::drop_na(THP1_histones)
-histone_frag_raw$PTM <- histone_frag_raw$PTM %>% 
-  str_replace_all("H3_3_8", "H3 3-8") %>% 
-  str_replace_all("H3_9_17", "H3 9-17") %>% 
-  str_replace_all("H3_18_26", "H3 18-26") %>% 
-  str_replace_all("H3_27_40", "H3 27-40") %>% 
-  str_replace_all("H33_27_40", "H3.3 27-40") %>% 
-  str_replace_all("H3_41_49", "H3 41-49") %>% 
-  str_replace_all("H3_54_63", "H3 54-63") %>% 
-  str_replace_all("H3_73_83", "H3 73-83") %>% 
-  str_replace_all("H3_117_128", "H3 117-128") %>% 
-  str_replace_all("H4_4_17", "H4 4-17") %>% 
-  str_replace_all("H4_20_23", "H4 20-23") %>% 
-  str_replace_all("H4_24_35", "H4 24-35") %>% 
-  str_replace_all("H4_40_45", "H4 40-45") %>% 
-  str_replace_all("H4_79_92", "H4 79-92") %>% 
-  str_replace_all("H1_1_35", "H1 1-35") %>% 
-  str_replace_all("H1_54_81", "H1 54-71") %>% 
-  str_replace_all("H2A1_36_42", "H2A1 36-42") %>% 
-  str_replace_all("H2A3_36_42", "H2A3 36-42") %>% 
-  str_replace_all("H2AX_36_42", "H2AX 36-42") %>% 
-  str_replace_all("H2A1_4_11", "H2A1 4-11") %>% 
-  str_replace_all("H2AJ_4_11", "H2AJ 4-11") %>% 
-  str_replace_all("H2AX_4_11", "H2AX 4-11") %>% 
-  str_replace_all("H2A1_1_11", "H2A1 1-11") %>% 
-  str_replace_all("H2AV_1_19", "H2AV 1-19") %>% 
-  str_replace_all("H2AZ_1_19", "H2AZ 1-19") %>% 
-  str_replace_all("H2A1_12_17", "H2A1 12-17") %>% 
-  str_replace_all("H2A3_12_17", "H2A3 12-17") %>% 
-  str_replace_all("H2A1_72_77", "H2A1 72-77") %>% 
-  str_replace_all("H2A_82_88", "H2A 82-88") %>% 
-  str_replace_all("H2A_1_88", "H2A 1-88") %>% 
-  str_replace_all("H2B_1_29", "H2B 1-29")
-
+histone_single_raw <- clean_names(THP1_histones, "PTM")[[1]]
+histone_frag_raw <- clean_names(THP1_histones, "PTM")[[2]]
 ```
 
 ## 3.1. Individual values
@@ -300,37 +268,9 @@ We separate out the histone fragments containing co-occurring PTMs from the indi
 
 ### 3.1.1. Fragments
 ```{r fragment-histone-processing}
-# Group two conditions together
-histone_frag <- histone_frag_raw
-histone_frag <- histone_frag %>%
-  relocate(contains("I"), .after = last_col()) %>% 
-  relocate("PTM")
-
-# Calculate infected/control fold change and P value
-histone_frag <- histone_frag %>% 
-  rowwise() %>% 
-  mutate(c_mean = mean(c_across("C1":"C5")),
-         i_mean = mean(c_across("I1":"I5")),
-         FC = c_across(i_mean)/c_across(c_mean),
-         "log2(FC)" = log2(FC),
-         is_constant = all(c_across("C1":"C5") == c_across("I1":"I5")))
-
-histone_frag <- column_to_rownames(histone_frag, var = "PTM")
-histone_frag$PTM <- rownames(histone_frag)
-
-histone_frag$"P value" <- NA
-histone_p <- histone_frag %>% 
-  rowwise() %>% 
-  filter(is_constant == FALSE) %>% 
-  # Removing any proteins that have all equal values, which gives an 
-  # error when running t.test()
-  mutate("P value" = t.test(c_across("C1":"C5"), c_across("I1":"I5"),
-         alternative = "two.sided", var.equal = TRUE)$p.value)
-
-histone_frag <- full_join(histone_frag, histone_p)
-
-histone_frag$`log2(FC)`[histone_frag$`log2(FC)` == "NaN"] <- NA
-histone_frag$FC[histone_frag$FC == "NaN"] <- NA
+histone_frag <- histone_epi(df = histone_frag_raw, label_col = "PTM",
+                           base_cols = c("C1", "C2", "C3", "C4", "C5"),
+                           target_cols = c("I1", "I2", "I3", "I4", "I5"))
 ```
 
 The `volcano_epi()` function plots the epiproteome data, assuming that all values have already been transformed and statistical analysis has already been performed. To address infinite fold change values that appear when a protein is not detected in one condition, it also sets them to have a unique shape in the final plot and assigns a fold change value equal to 2.5 times the maximum valid value.
@@ -348,70 +288,10 @@ volcano_epi(df = histone_frag, fc_col = "log2(FC)",
 ### 3.1.2. Single
 This section parses the fragments into single PTMs. Each occurrence is counted individually - for example, H4 4-17 K5acK12acK16ac would be counted as H4K5ac, H4K8ac, and H4K16ac.
 
-```{r single-processing, warning = FALSE}
-# warnings silenced - multiple warnings come up if a regex string is empty
-histone_single_raw <- histone_frag_raw
-histone_single_raw <- histone_single_raw[!grepl("\\.", histone_single_raw$PTM),]
-histone_single_unmod <- histone_single_raw[grepl("unmod", histone_single_raw$PTM),]
-histone_single_raw <- histone_single_raw[!grepl("unmod", histone_single_raw$PTM),]
-
-histone_single_raw <- histone_single_raw %>% 
-  mutate("subset" = str_extract(`PTM`, "([^\ ]+$)")) %>% 
-  mutate("PTM4" = str_split_i(`subset`, "(?=K)", i = -1)) %>% 
-  mutate("PTM3" = str_split_i(`subset`, "(?=K)", i = -2)) %>% 
-  mutate("PTM2" = str_split_i(`subset`, "(?=K)", i = -3)) %>% 
-  # add line above for max co-occurring PTMs, then remove
-  mutate("PTM1" = str_remove(`subset`, `PTM2`)) %>% 
-  mutate("PTM1" = str_remove(`PTM1`, `PTM3`)) %>% 
-  mutate("PTM1" = str_remove(`PTM1`, `PTM4`))
-
-histone_single_raw <- replace(histone_single_raw, histone_single_raw == "", NA)
-
-histone_single_long <- histone_single_raw %>% 
-  pivot_longer(cols = c("PTM4", "PTM3", "PTM2", "PTM1"), names_to = NULL,
-               values_to = "single_PTM", values_drop_na = TRUE) %>% 
-  mutate("PTM" = str_remove(`PTM`, `subset`)) %>% 
-  unite(col = "PTM", c(`PTM`, `single_PTM`), sep = " ", remove = TRUE) %>% 
-  mutate("PTM" = str_squish(PTM))
-
-histone_single_long$PTM <- str_remove(histone_single_long$PTM, " .+ ") %>% 
-  str_replace("me1", "me")
-histone_single_long <- bind_rows(histone_single_long, histone_single_unmod)
-```
-
-```{r single-stats-p}
-histone_single_long_p <- histone_single_long %>% 
-  group_by(`PTM`) %>% 
-  summarize("C1" = mean(C1), "C2" = mean(C2), "C3" = mean(C3),
-            "C4" = mean(C4), "C5" = mean(C5), "I1" = mean(I1),
-            "I2" = mean(I2), "I3" = mean(I3), "I4" = mean(I4),
-            "I5" = mean(I5))
-
-# Calculate infected/control fold change and P value
-histone_single_p <- histone_single_long_p %>% 
-  rowwise() %>% 
-  mutate(c_mean = mean(c_across("C1":"C5")),
-         i_mean = mean(c_across("I1":"I5")),
-         FC = c_across(i_mean)/c_across(c_mean),
-         "log2(FC)" = log2(FC),
-         is_constant = all(c_across("C1":"C5") == c_across("I1":"I5")))
-
-histone_single_p <- column_to_rownames(histone_single_p, var = "PTM")
-histone_single_p$PTM <- rownames(histone_single_p)
-
-histone_single_p$"P value" <- NA
-single_p <- histone_single_p %>% 
-  rowwise() %>% 
-  filter(is_constant == FALSE) %>% 
-  # Removing any proteins that have all equal values, which gives an 
-  # error when running t.test()
-  mutate("P value" = t.test(c_across("C1":"C5"), c_across("I1":"I5"),
-         alternative = "two.sided", var.equal = TRUE)$p.value)
-
-histone_single_p <- full_join(histone_single_p, single_p)
-
-histone_single_p$`log2(FC)`[histone_single_p$`log2(FC)` == "NaN"] <- NA
-histone_single_p$FC[histone_single_p$FC == "NaN"] <- NA
+```{r single-processing}
+histone_single <- histone_epi(df = histone_single_raw, label_col = "PTM",
+                           base_cols = c("C1", "C2", "C3", "C4", "C5"),
+                           target_cols = c("I1", "I2", "I3", "I4", "I5"))
 ```
 
 ```{r histone-single-opts}
@@ -419,16 +299,14 @@ histone_single_p$FC[histone_single_p$FC == "NaN"] <- NA
 # for legibility reasons. Adjust this threshold to show more/fewer points.
 options("ggrepel.max.overlaps" = 20)
 
-volcano_epi(df = histone_single_p, fc_col = "log2(FC)",
+volcano_epi(df = THP1_single, fc_col = "log2(FC)",
             p_col = "P value", label_col = "PTM") +
   labs(title = "Volcano plot", x = "log2(FC)", y = "-log10(P-value)")
 ```
 
 ```{r clear-3}
 # Clearing large variables
-rm(THP1_histones, histone_frag, histone_frag_raw, histone_p,
-   histone_single_long, histone_single_long_p, histone_single_raw,
-   histone_single_unmod, single_p)
+rm(THP1_histones, histone_single_raw, histone_frag_raw)
 ```
 
 # 4. Disease enrichment
@@ -596,7 +474,7 @@ ggplot(joined_data, aes(x = `log2(FC)`, y = -log10(`P value`))) +
 targets <- str_replace_all(str_flatten_comma(str_unique(c(joined_data$Product, joined_data$`Target entity`))), ", ", "|")
 
 # Filter by that list
-total_histone_int <- filter(histone_single_p, grepl(targets, PTM))
+total_histone_int <- filter(histone_single, grepl(targets, PTM))
 total_histone_int$Diff <- case_when(total_histone_int$`log2(FC)` > 0 ~ "Up",
                              total_histone_int$`log2(FC)` < 0 ~ "Down",
                              .default = "0")
