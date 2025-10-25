@@ -263,10 +263,9 @@ histone_single_raw <- clean_names(THP1_histones, "PTM")[[1]]
 histone_frag_raw <- clean_names(THP1_histones, "PTM")[[2]]
 ```
 
-## 3.1. Individual values
 We separate out the histone fragments containing co-occurring PTMs from the individual PTMs and present both individually. This allows for discovery with complexes that require two or more targets, but also provides a clear picture of overall PTM changes. Here, we group our two conditions together, marked by columns that start with "I" for infected cells or "C" for control.
 
-### 3.1.1. Fragments
+## 3.1. Fragments
 ```{r fragment-histone-processing}
 histone_frag <- histone_epi(df = histone_frag_raw, label_col = "PTM",
                            base_cols = c("C1", "C2", "C3", "C4", "C5"),
@@ -285,7 +284,7 @@ volcano_epi(df = histone_frag, fc_col = "log2(FC)",
   labs(title = "Volcano plot", x = "log2(FC)", y = "-log10(P-value)")
 ```
 
-### 3.1.2. Single
+## 3.2. Single
 This section parses the fragments into single PTMs. Each occurrence is counted individually - for example, H4 4-17 K5acK12acK16ac would be counted as H4K5ac, H4K8ac, and H4K16ac.
 
 ```{r single-processing}
@@ -299,7 +298,7 @@ histone_single <- histone_epi(df = histone_single_raw, label_col = "PTM",
 # for legibility reasons. Adjust this threshold to show more/fewer points.
 options("ggrepel.max.overlaps" = 20)
 
-volcano_epi(df = THP1_single, fc_col = "log2(FC)",
+volcano_epi(df = histone_single, fc_col = "log2(FC)",
             p_col = "P value", label_col = "PTM") +
   labs(title = "Volcano plot", x = "log2(FC)", y = "-log10(P-value)")
 ```
