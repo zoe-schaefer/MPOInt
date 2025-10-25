@@ -36,9 +36,6 @@ histone_summary <- function(df, label_col, base_cols, base_std = NA, target_col,
   if(!is.character(base_cols)){
     stop(paste(base_cols, " is not a list.", sep = ""))
   }
-  if(!is.numeric(df[[base_std]]) & !is.na(base_std)) {
-    stop(paste(base_std, " is not numeric or NA.", sep = ""))
-  }
   if(!is.numeric(df[[target_col]])) {
     stop(paste(target_col, " is not numeric.", sep = ""))
   }
