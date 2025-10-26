@@ -171,7 +171,7 @@ information included. Changing the value of <code>label_format</code>
 adjusts the label wrapping, which can help crowded figures.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">total_GSEA_GO</span><span class="op">@</span><span class="va">result</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu">dotplot</span><span class="op">(</span><span class="va">total_GSEA_GO</span>, showCategory <span class="op">=</span> <span class="fl">20</span>, font.size <span class="op">=</span> <span class="fu">rel</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, label_format <span class="op">=</span> <span class="fl">40</span>, title <span class="op">=</span> <span class="st">"GO enrichment"</span>,</span>
+<span>  <span class="fu">dotplot</span><span class="op">(</span><span class="va">total_GSEA_GO</span>, showCategory <span class="op">=</span> <span class="fl">20</span>, font.size <span class="op">=</span> <span class="fu">rel</span><span class="op">(</span><span class="fl">0.8</span><span class="op">)</span>, label_format <span class="op">=</span> <span class="fl">40</span>, title <span class="op">=</span> <span class="st">"GO enrichment"</span>,</span>
 <span>          split <span class="op">=</span> <span class="st">"ONTOLOGY"</span><span class="op">)</span> <span class="op">+</span> <span class="fu">facet_wrap</span><span class="op">(</span><span class="va">ONTOLOGY</span><span class="op">~</span><span class="va">.sign</span>, scales <span class="op">=</span> <span class="st">"free_y"</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"Error: no terms enriched under P-value cutoff (total_GSEA_GO)"</span><span class="op">)</span></span>
@@ -301,29 +301,17 @@ value with standard deviation. We create a standard baseline and then
 generate a P value from a T score.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">MCF7_histones</span><span class="op">)</span></span>
-<span><span class="va">histone_frag_raw</span> <span class="op">&lt;-</span> <span class="va">MCF7_histones</span></span>
-<span><span class="co"># Creating an overall baseline by averaging the non-cancer cell lines</span></span>
-<span><span class="va">histone_frag_raw</span><span class="op">&lt;-</span> <span class="va">histone_frag_raw</span> <span class="op">%&gt;%</span> <span class="fu">mutate</span><span class="op">(</span><span class="st">"avg std"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="fu">pick</span><span class="op">(</span><span class="st">"293 ave (5 reps)"</span>, <span class="st">"HaCAT ave (5 reps)"</span>,</span>
-<span>                                    <span class="st">"hESC ave (6 reps)"</span>, <span class="st">"HFF ave (7 reps)"</span>,</span>
-<span>                                    <span class="st">"Mdm13 ave (5 reps)"</span><span class="op">)</span>, <span class="fl">1</span>, <span class="va">sd</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">histone_frag_raw</span> <span class="op">&lt;-</span> <span class="va">histone_frag_raw</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PTM"</span>, <span class="st">"MCF7 ave (5 reps)"</span>, <span class="st">"MCF7 std"</span>, <span class="st">"ctrl ave"</span>, <span class="st">"avg std"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"log2(FC)"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="va">`MCF7 ave (5 reps)`</span><span class="op">/</span><span class="va">`ctrl ave`</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"T score"</span> <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"P value"</span> <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
-<span><span class="va">histone_frag</span> <span class="op">&lt;-</span> <span class="va">histone_frag_raw</span></span>
-<span><span class="va">histone_frag</span> <span class="op">&lt;-</span> <span class="va">histone_frag</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"T score"</span> <span class="op">=</span> <span class="op">(</span><span class="va">`MCF7 ave (5 reps)`</span> <span class="op">-</span> <span class="va">`ctrl ave`</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">`MCF7 std`</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"P value"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/TDist.html" class="external-link">pt</a></span><span class="op">(</span>q <span class="op">=</span> <span class="va">`T score`</span>, df <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">MCF7_histones</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">MCF7_histones</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PTM"</span>, <span class="st">"MCF7 ave (5 reps)"</span>, <span class="st">"293 ave (5 reps)"</span>, <span class="st">"HaCAT ave (5 reps)"</span>, <span class="st">"hESC ave (6 reps)"</span>, <span class="st">"HFF ave (7 reps)"</span>, <span class="st">"Mdm13 ave (5 reps)"</span>, <span class="st">"MCF7 std"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">histone_single_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_names.html">clean_names</a></span><span class="op">(</span><span class="va">MCF7_histones</span>, <span class="st">"PTM"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">histone_frag_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_names.html">clean_names</a></span><span class="op">(</span><span class="va">MCF7_histones</span>, <span class="st">"PTM"</span><span class="op">)</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="individual-values">3.1. Individual values<a class="anchor" aria-label="anchor" href="#individual-values"></a>
+<h3 id="fragments">3.1. Fragments<a class="anchor" aria-label="anchor" href="#fragments"></a>
 </h3>
-<div class="section level4">
-<h4 id="fragments">3.1.1. Fragments<a class="anchor" aria-label="anchor" href="#fragments"></a>
-</h4>
 <p>The data available here was already in a legible format, so we do not
 have to process it extensively.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">histone_frag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/histone_summary.html">histone_summary</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">histone_frag_raw</span>, label_col <span class="op">=</span> <span class="st">"PTM"</span>, base_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"293 ave (5 reps)"</span>, <span class="st">"HaCAT ave (5 reps)"</span>, <span class="st">"hESC ave (6 reps)"</span>, <span class="st">"HFF ave (7 reps)"</span>, <span class="st">"Mdm13 ave (5 reps)"</span><span class="op">)</span>, base_std <span class="op">=</span> <span class="cn">NA</span>, target_col <span class="op">=</span> <span class="st">"MCF7 ave (5 reps)"</span>, target_std <span class="op">=</span> <span class="st">"MCF7 std"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Setting this value - geom_text_repel will only show so many labels at once</span></span>
 <span><span class="co"># for legibility reasons. Adjust this threshold to show more/fewer points.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="st">"ggrepel.max.overlaps"</span> <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
@@ -331,70 +319,36 @@ have to process it extensively.</p>
 <span><span class="fu"><a href="../reference/volcano_epi.html">volcano_epi</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">histone_frag</span>, fc_col <span class="op">=</span> <span class="st">"log2(FC)"</span>,</span>
 <span>            p_col <span class="op">=</span> <span class="st">"P value"</span>, label_col <span class="op">=</span> <span class="st">"PTM"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Volcano plot"</span>, x <span class="op">=</span> <span class="st">"log2(FC)"</span>, y <span class="op">=</span> <span class="st">"-log10(P-value)"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Joining with `by = join_by(PTM, `MCF7 ave (5 reps)`, `MCF7 std`, `ctrl ave`,</span></span>
-<span><span class="co">#&gt; `avg std`, `log2(FC)`, `T score`, `P value`, x_col, p_raw, p_log10, DiffExp,</span></span>
-<span><span class="co">#&gt; labels)`</span></span></code></pre></div>
+<span><span class="co">#&gt; Joining with `by = join_by(PTM, `293 ave (5 reps)`, `HaCAT ave (5 reps)`, `hESC</span></span>
+<span><span class="co">#&gt; ave (6 reps)`, `HFF ave (7 reps)`, `Mdm13 ave (5 reps)`, target_col,</span></span>
+<span><span class="co">#&gt; target_std, base_avg, base_std, `log2(FC)`, `T score`, `P value`, x_col, p_raw,</span></span>
+<span><span class="co">#&gt; p_log10, DiffExp, labels)`</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/fragment-plot-1.png" width="700"></p>
 </div>
-<div class="section level4">
-<h4 id="single">3.1.2. Single<a class="anchor" aria-label="anchor" href="#single"></a>
-</h4>
+<div class="section level3">
+<h3 id="single">3.2. Single<a class="anchor" aria-label="anchor" href="#single"></a>
+</h3>
 <p>This section parses the fragments into single PTMs. Each occurrence
 is counted individually - for example, H4 4-17 K5acK12acK16ac would be
 counted as H4K5ac, H4K8ac, and H4K16ac.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># warnings silenced - multiple warnings come up if a regex string is empty</span></span>
-<span><span class="va">histone_single_raw</span> <span class="op">&lt;-</span> <span class="va">histone_frag_raw</span></span>
-<span><span class="va">histone_single_raw</span> <span class="op">&lt;-</span> <span class="va">histone_single_raw</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"\\."</span>, <span class="va">histone_single_raw</span><span class="op">$</span><span class="va">PTM</span><span class="op">)</span>,<span class="op">]</span></span>
-<span><span class="va">histone_single_unmod</span> <span class="op">&lt;-</span> <span class="va">histone_single_raw</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"unmod"</span>, <span class="va">histone_single_raw</span><span class="op">$</span><span class="va">PTM</span><span class="op">)</span>,<span class="op">]</span></span>
-<span><span class="va">histone_single_raw</span> <span class="op">&lt;-</span> <span class="va">histone_single_raw</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"unmod"</span>, <span class="va">histone_single_raw</span><span class="op">$</span><span class="va">PTM</span><span class="op">)</span>,<span class="op">]</span></span>
-<span></span>
-<span><span class="va">histone_single_raw</span> <span class="op">&lt;-</span> <span class="va">histone_single_raw</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"subset"</span> <span class="op">=</span> <span class="fu">str_extract</span><span class="op">(</span><span class="va">`PTM`</span>, <span class="st">"([^\ ]+$)"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"PTM4"</span> <span class="op">=</span> <span class="fu">str_split_i</span><span class="op">(</span><span class="va">`subset`</span>, <span class="st">"(?=K)"</span>, i <span class="op">=</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"PTM3"</span> <span class="op">=</span> <span class="fu">str_split_i</span><span class="op">(</span><span class="va">`subset`</span>, <span class="st">"(?=K)"</span>, i <span class="op">=</span> <span class="op">-</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"PTM2"</span> <span class="op">=</span> <span class="fu">str_split_i</span><span class="op">(</span><span class="va">`subset`</span>, <span class="st">"(?=K)"</span>, i <span class="op">=</span> <span class="op">-</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="co"># add line above for max co-occurring PTMs, then remove</span></span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"PTM1"</span> <span class="op">=</span> <span class="fu">str_remove</span><span class="op">(</span><span class="va">`subset`</span>, <span class="va">`PTM2`</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"PTM1"</span> <span class="op">=</span> <span class="fu">str_remove</span><span class="op">(</span><span class="va">`PTM1`</span>, <span class="va">`PTM3`</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"PTM1"</span> <span class="op">=</span> <span class="fu">str_remove</span><span class="op">(</span><span class="va">`PTM1`</span>, <span class="va">`PTM4`</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">histone_single_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/replace.html" class="external-link">replace</a></span><span class="op">(</span><span class="va">histone_single_raw</span>, <span class="va">histone_single_raw</span> <span class="op">==</span> <span class="st">""</span>, <span class="cn">NA</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">histone_single_long</span> <span class="op">&lt;-</span> <span class="va">histone_single_raw</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">pivot_longer</span><span class="op">(</span>cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PTM4"</span>, <span class="st">"PTM3"</span>, <span class="st">"PTM2"</span>, <span class="st">"PTM1"</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>               values_to <span class="op">=</span> <span class="st">"single_PTM"</span>, values_drop_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"PTM"</span> <span class="op">=</span> <span class="fu">str_remove</span><span class="op">(</span><span class="va">`PTM`</span>, <span class="va">`subset`</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">unite</span><span class="op">(</span>col <span class="op">=</span> <span class="st">"PTM"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">`PTM`</span>, <span class="va">`single_PTM`</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">" "</span>, remove <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"PTM"</span> <span class="op">=</span> <span class="fu">str_squish</span><span class="op">(</span><span class="va">PTM</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">histone_single_long</span><span class="op">$</span><span class="va">PTM</span> <span class="op">&lt;-</span> <span class="fu">str_remove</span><span class="op">(</span><span class="va">histone_single_long</span><span class="op">$</span><span class="va">PTM</span>, <span class="st">" .+ "</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">str_replace</span><span class="op">(</span><span class="st">"me1"</span>, <span class="st">"me"</span><span class="op">)</span></span>
-<span><span class="va">histone_single_long</span> <span class="op">&lt;-</span> <span class="fu">bind_rows</span><span class="op">(</span><span class="va">histone_single_long</span>, <span class="va">histone_single_unmod</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">histone_single_raw</span> <span class="op">&lt;-</span> <span class="va">histone_single_long</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">`PTM`</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">summarize</span><span class="op">(</span><span class="st">"sample ave"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`MCF7 ave (5 reps)`</span><span class="op">)</span>,</span>
-<span>            <span class="st">"sample std"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`MCF7 std`</span><span class="op">)</span>,</span>
-<span>            <span class="st">"ctrl ave"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`ctrl ave`</span><span class="op">)</span>,</span>
-<span>            <span class="st">"avg std"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`avg std`</span><span class="op">)</span>,</span>
-<span>            <span class="st">"T score"</span> <span class="op">=</span> <span class="st">""</span>,</span>
-<span>            <span class="st">"P value"</span> <span class="op">=</span> <span class="st">""</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"log2(FC)"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="va">`sample ave`</span><span class="op">/</span><span class="va">`ctrl ave`</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">histone_single_p</span> <span class="op">&lt;-</span> <span class="va">histone_single_raw</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"T score"</span> <span class="op">=</span> <span class="op">(</span><span class="va">`sample ave`</span> <span class="op">-</span> <span class="va">`ctrl ave`</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">`sample std`</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"P value"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/TDist.html" class="external-link">pt</a></span><span class="op">(</span>q <span class="op">=</span> <span class="va">`T score`</span>, df <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">histone_single_p</span><span class="op">$</span><span class="va">PTM</span> <span class="op">&lt;-</span> <span class="fu">str_remove</span><span class="op">(</span><span class="va">histone_single_p</span><span class="op">$</span><span class="va">PTM</span>, <span class="st">" .+ "</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">str_remove</span><span class="op">(</span><span class="st">"un"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">str_replace</span><span class="op">(</span><span class="st">"me1"</span>, <span class="st">"me"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">histone_single</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/histone_summary.html">histone_summary</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">histone_single_raw</span>, label_col <span class="op">=</span> <span class="st">"PTM"</span>, base_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"293 ave (5 reps)"</span>, <span class="st">"HaCAT ave (5 reps)"</span>, <span class="st">"hESC ave (6 reps)"</span>, <span class="st">"HFF ave (7 reps)"</span>, <span class="st">"Mdm13 ave (5 reps)"</span><span class="op">)</span>, base_std <span class="op">=</span> <span class="cn">NA</span>, target_col <span class="op">=</span> <span class="st">"MCF7 ave (5 reps)"</span>, target_std <span class="op">=</span> <span class="st">"MCF7 std"</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Setting this value - geom_text_repel will only show so many labels at once</span></span>
+<span><span class="co"># for legibility reasons. Adjust this threshold to show more/fewer points.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="st">"ggrepel.max.overlaps"</span> <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/volcano_epi.html">volcano_epi</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">histone_single</span>, fc_col <span class="op">=</span> <span class="st">"log2(FC)"</span>,</span>
+<span>            p_col <span class="op">=</span> <span class="st">"P value"</span>, label_col <span class="op">=</span> <span class="st">"PTM"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Volcano plot"</span>, x <span class="op">=</span> <span class="st">"log2(FC)"</span>, y <span class="op">=</span> <span class="st">"-log10(P-value)"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Joining with `by = join_by(PTM, `293 ave (5 reps)`, `HaCAT ave (5 reps)`, `hESC</span></span>
+<span><span class="co">#&gt; ave (6 reps)`, `HFF ave (7 reps)`, `Mdm13 ave (5 reps)`, target_col,</span></span>
+<span><span class="co">#&gt; target_std, base_avg, base_std, `log2(FC)`, `T score`, `P value`, x_col, p_raw,</span></span>
+<span><span class="co">#&gt; p_log10, DiffExp, labels)`</span></span></code></pre></div>
+<p><img src="MCF7_case_files/figure-html/fragment-plot-2-1.png" width="700"></p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Clearing large variables</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">MCF7_histones</span>, <span class="va">histone_frag</span>, <span class="va">histone_frag_raw</span>,</span>
-<span>   <span class="va">histone_single_long</span>, <span class="va">histone_single_raw</span>,</span>
-<span>   <span class="va">histone_single_unmod</span><span class="op">)</span></span></code></pre></div>
-</div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">MCF7_histones</span>, <span class="va">histone_frag_raw</span>, <span class="va">histone_single_raw</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -410,7 +364,7 @@ selected dataset. This can also be replaced with <code>gs_id</code> if
 you are using the “Systematic name” value on the website.</p>
 <p>We enrich our primary disease of interest (breast cancer), but also
 include enrichment for hypertension and ovarian cancer.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">GDA_ERBC</span> <span class="op">&lt;-</span> <span class="fu">msigdbr</span><span class="op">(</span>collection <span class="op">=</span> <span class="st">"C2"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">gs_id</span> <span class="op">==</span> <span class="st">"M18299"</span><span class="op">)</span></span>
 <span><span class="va">GDA_HT</span> <span class="op">&lt;-</span> <span class="fu">msigdbr</span><span class="op">(</span>collection <span class="op">=</span> <span class="st">"C5"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">gs_exact_source</span> <span class="op">==</span> <span class="st">"HP:0000822"</span><span class="op">)</span></span>
 <span><span class="va">GDA_OvCa</span> <span class="op">&lt;-</span> <span class="fu">msigdbr</span><span class="op">(</span>collection <span class="op">=</span> <span class="st">"C5"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">gs_exact_source</span> <span class="op">==</span> <span class="st">"HP:0100615"</span><span class="op">)</span></span></code></pre></div>
@@ -418,7 +372,7 @@ include enrichment for hypertension and ovarian cancer.</p>
 were significant and above the fold change threshold in the total and
 phosphoproteome, as well as the genes of interest that were just
 retrieved.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get lists of proteins that were significant AND above the FC threshold</span></span>
 <span><span class="va">total_FC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">MCF7_total_sig</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">`log2(FC)`</span><span class="op">)</span> <span class="op">&gt;</span> <span class="va">total_FC_threshold</span><span class="op">)</span></span>
 <span><span class="va">phospho_FC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">MCF7_phospho_sig</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">`log2(FC)`</span><span class="op">)</span> <span class="op">&gt;</span> <span class="va">phospho_FC_threshold</span><span class="op">)</span></span>
@@ -433,7 +387,7 @@ retrieved.</p>
 <span>  plot.title.position <span class="op">=</span> <span class="st">"plot"</span>,</span>
 <span>  plot.title <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/GDA-1.png" width="700"></p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu">ggvenn</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Hypertension"</span> <span class="op">=</span> <span class="va">GDA_HT</span><span class="op">$</span><span class="va">gene_symbol</span>,</span>
@@ -444,7 +398,7 @@ retrieved.</p>
 <span>  plot.title.position <span class="op">=</span> <span class="st">"plot"</span>,</span>
 <span>  plot.title <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/GDA-2.png" width="700"></p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu">ggvenn</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Ovarian cancer"</span> <span class="op">=</span> <span class="va">GDA_OvCa</span><span class="op">$</span><span class="va">gene_symbol</span>,</span>
@@ -457,7 +411,7 @@ retrieved.</p>
 <p><img src="MCF7_case_files/figure-html/GDA-3.png" width="700"></p>
 <p>We next print a list of proteins in the four intersecting areas for
 further investigation in our disease of interest.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Print the list of proteins in each intersection</span></span>
 <span><span class="va">ERBC_intersections</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                                 <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -533,7 +487,7 @@ ZNF691, ZNF800, ZNRF2, ZYX</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">HT_intersections</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                                 <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                                 stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
@@ -614,7 +568,7 @@ ZNF691, ZNF800, ZNRF2, ZYX</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">OvCa_intersections</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"Intersection"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                                 <span class="st">"Hits"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                                 stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
@@ -691,7 +645,7 @@ ZNF691, ZNF800, ZNRF2, ZYX</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Clearing large variables</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">GDA_ERBC</span>, <span class="va">GDA_HT</span>, <span class="va">GDA_OvCa</span>, <span class="va">ERBC_intersections</span>, <span class="va">HT_intersections</span>, <span class="va">OvCa_intersections</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -706,7 +660,7 @@ is drawn in Python and rendered as an embedded HTML file.</p>
 the MPOInt package, but can be replaced to update or change the database
 by downloading and importing the “Table of all proteins” file on the
 EpiFactors website.</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">genes</span><span class="op">)</span></span>
 <span><span class="va">total_join</span> <span class="op">&lt;-</span> <span class="fu">inner_join</span><span class="op">(</span><span class="va">genes</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">MCF7_total_sig</span>, <span class="st">"log2(FC)"</span>, <span class="st">"P value"</span>, <span class="st">"SYMBOL2"</span><span class="op">)</span>, by <span class="op">=</span> <span class="fu">join_by</span><span class="op">(</span><span class="st">"HGNC approved symbol"</span> <span class="op">==</span> <span class="st">"SYMBOL2"</span><span class="op">)</span>, multiple <span class="op">=</span> <span class="st">"any"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">mutate</span><span class="op">(</span><span class="st">"Source"</span> <span class="op">=</span> <span class="st">"Total"</span><span class="op">)</span></span>
@@ -722,7 +676,7 @@ EpiFactors website.</p>
 <span><span class="co"># Assigning differential expression identifiers</span></span>
 <span><span class="va">joined_data</span><span class="op">$</span><span class="va">Diff</span> <span class="op">&lt;-</span> <span class="fu">case_when</span><span class="op">(</span><span class="va">joined_data</span><span class="op">$</span><span class="va">`log2(FC)`</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"Up"</span>,</span>
 <span>                             <span class="va">joined_data</span><span class="op">$</span><span class="va">`log2(FC)`</span> <span class="op">&lt;</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"Down"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plotting all relevant proteins from the two combined datasets</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">joined_data</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">`log2(FC)`</span>, y <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">`P value`</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_point</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>color <span class="op">=</span> <span class="va">Source</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -738,12 +692,12 @@ EpiFactors website.</p>
 <span><span class="co">#&gt; Warning: ggrepel: 153 unlabeled data points (too many overlaps). Consider</span></span>
 <span><span class="co">#&gt; increasing max.overlaps</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/network-proteins-1.png" width="700"></p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Formatting histone targets</span></span>
 <span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="fu">str_flatten_comma</span><span class="op">(</span><span class="fu">str_unique</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">joined_data</span><span class="op">$</span><span class="va">Product</span>, <span class="va">joined_data</span><span class="op">$</span><span class="va">`Target entity`</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, <span class="st">", "</span>, <span class="st">"|"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Filter by that list</span></span>
-<span><span class="va">total_histone_int</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">histone_single_p</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="va">targets</span>, <span class="va">PTM</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">total_histone_int</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">histone_single</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="va">targets</span>, <span class="va">PTM</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">total_histone_int</span><span class="op">$</span><span class="va">Diff</span> <span class="op">&lt;-</span> <span class="fu">case_when</span><span class="op">(</span><span class="va">total_histone_int</span><span class="op">$</span><span class="va">`log2(FC)`</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"Up"</span>,</span>
 <span>                             <span class="va">total_histone_int</span><span class="op">$</span><span class="va">`log2(FC)`</span> <span class="op">&lt;</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"Down"</span>,</span>
 <span>                             .default <span class="op">=</span> <span class="st">"0"</span><span class="op">)</span></span>
@@ -762,7 +716,7 @@ EpiFactors website.</p>
 <span>  <span class="fu">geom_text_repel</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>label <span class="op">=</span> <span class="va">PTM</span><span class="op">)</span>, show.legend <span class="op">=</span> <span class="cn">FALSE</span>, size <span class="op">=</span> <span class="fu">rel</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="MCF7_case_files/figure-html/network-histone-import-1.png" width="700"></p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Pivoting and formatting the gene list</span></span>
 <span><span class="va">genes_pivoted</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">genes</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HGNC approved symbol"</span>, <span class="st">"Protein complex"</span>, <span class="st">"Target entity"</span>, <span class="st">"Product"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="st">"Symbol"</span> <span class="op">=</span> <span class="st">"HGNC approved symbol"</span>, <span class="st">"Complex"</span> <span class="op">=</span> <span class="st">"Protein complex"</span>, <span class="st">"Target"</span> <span class="op">=</span> <span class="st">"Target entity"</span>, <span class="st">"Product"</span> <span class="op">=</span> <span class="st">"Product"</span><span class="op">)</span></span>
 <span></span>
@@ -784,7 +738,7 @@ EpiFactors website.</p>
 <span>                                                      <span class="st">"log2(FC)"</span>, <span class="st">"P value"</span>, <span class="st">"Source"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>                                by <span class="op">=</span> <span class="fu">join_by</span><span class="op">(</span><span class="st">"Symbol"</span> <span class="op">==</span> <span class="st">"HGNC approved symbol"</span><span class="op">)</span>,</span>
 <span>                                relationship <span class="op">=</span> <span class="st">"many-to-many"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Getting the lists into the right format for the igraph visualization</span></span>
 <span><span class="va">genes_histone_pivoted</span> <span class="op">&lt;-</span> <span class="fu">pivot_longer</span><span class="op">(</span><span class="va">genes_data_joined</span>, cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Target"</span>, <span class="st">"Product"</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>             values_to <span class="op">=</span> <span class="st">"PTM"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span></span>
@@ -803,7 +757,7 @@ EpiFactors website.</p>
 <span><span class="co"># Ensuring no NA values remain, replacing "#" with a clearer identifier</span></span>
 <span><span class="va">genes_histone_joined</span><span class="op">[</span><span class="va">genes_histone_joined</span> <span class="op">==</span> <span class="st">"#"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"No ID"</span></span>
 <span><span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">Complex</span> <span class="op">&lt;-</span> <span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">Complex</span> <span class="op">%&gt;%</span>  <span class="fu">replace_na</span><span class="op">(</span><span class="st">"No ID"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generating a dataframe for edges and a dataframe for unique vertices with metadata</span></span>
 <span><span class="va">complexes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">genes_histone_joined</span><span class="op">$</span><span class="va">Complex</span><span class="op">)</span></span>
 <span><span class="va">n_complexes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">complexes</span><span class="op">)</span><span class="op">)</span></span>
@@ -838,7 +792,7 @@ EpiFactors website.</p>
 <span><span class="va">edges_df</span> <span class="op">&lt;-</span> <span class="fu">drop_na</span><span class="op">(</span><span class="va">edges_df</span>, <span class="va">Diff</span><span class="op">)</span></span></code></pre></div>
 <p>This alternative visualization shows the members of the identified
 complexes without connections.</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sig_network</span> <span class="op">&lt;-</span> <span class="fu">distinct</span><span class="op">(</span><span class="fu">group_by</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">edges_df</span>, <span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span><span class="op">)</span>, <span class="va">Complex</span><span class="op">)</span>, <span class="va">Symbol</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">sig_network</span><span class="op">[</span><span class="st">"weight"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span><span class="va">sig_network</span><span class="op">$</span><span class="va">Complex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">sig_network</span><span class="op">$</span><span class="va">Complex</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">sig_network</span><span class="op">$</span><span class="va">Complex</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -856,7 +810,7 @@ complexes without connections.</p>
 </h3>
 <p>For future research use, we generate multiple tables containing the
 identified complexes, members, common targets, and identified PTMs.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Identified complexes</span></span>
 <span><span class="va">final_complexes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">vertices_df</span>, <span class="va">vertices_df</span><span class="op">$</span><span class="va">Source</span> <span class="op">!=</span> <span class="st">"Histone"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">drop_na</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">final_complex_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">final_complexes</span><span class="op">$</span><span class="va">Complex</span><span class="op">)</span><span class="op">)</span></span>
@@ -870,7 +824,7 @@ NuA4-related complex, NuRD, NuRF, PBAF, Piccolo_NuA4, PRC1, PRC2,
 RING2-FBRS, RING2-L3MBTL2, SAGA, SCL, SRCAP, STAGA, SWI/SNF BRM-BRG1,
 SWI/SNF_Brg1(I), SWI/SNF_Brg1(II), SWI/SNF_Brm, SWI/SNF-like EPAFB,
 SWI/SNF-like_EPAFa, SWR, WINAC</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># List members of each</span></span>
 <span><span class="va">final_members</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"Complex"</span> <span class="op">=</span> <span class="st">""</span>, <span class="st">"Members"</span> <span class="op">=</span> <span class="st">""</span>, <span class="st">"PTMs"</span> <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span>
 <span></span>
@@ -1136,7 +1090,7 @@ H3K9me</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Differential PTMs</span></span>
 <span><span class="va">final_PTMs</span> <span class="op">&lt;-</span> <span class="fu">distinct</span><span class="op">(</span><span class="va">final_complexes</span>, <span class="fu">pick</span><span class="op">(</span><span class="va">PTM</span>, <span class="va">Diff</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="st">"Differential expression"</span> <span class="op">=</span> <span class="st">"Diff"</span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">final_PTMs</span><span class="op">)</span></span></code></pre></div>
@@ -1340,7 +1294,7 @@ H3K9me</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Genes</span></span>
 <span><span class="va">final_proteins</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">final_complexes</span><span class="op">$</span><span class="va">Symbol</span><span class="op">)</span></span>
 <span><span class="va">final_func</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">genes</span>, <span class="va">genes</span><span class="op">$</span><span class="va">`HGNC approved symbol`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">final_proteins</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"UniProt ID (human)"</span><span class="op">)</span><span class="op">)</span></span>
@@ -1670,7 +1624,7 @@ write</td>
 <p>Finally, we create an interactive network using Python via the
 <code>reticulate</code> package. This allows a dynamic visualization
 that can be refined and filtered to generate different views.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Shapes</span> <span class="op">&lt;-</span> <span class="fu">case_when</span><span class="op">(</span><span class="va">vertices_df</span><span class="op">$</span><span class="va">Diff</span> <span class="op">==</span> <span class="st">"Up"</span> <span class="op">~</span> <span class="st">"triangle"</span>,</span>
 <span>                             <span class="va">vertices_df</span><span class="op">$</span><span class="va">Diff</span> <span class="op">==</span> <span class="st">"Down"</span> <span class="op">~</span> <span class="st">"triangleDown"</span>,</span>
 <span>                          <span class="va">vertices_df</span><span class="op">$</span><span class="va">Diff</span> <span class="op">==</span> <span class="st">"0"</span> <span class="op">~</span> <span class="st">"ellipse"</span><span class="op">)</span></span>
@@ -1681,35 +1635,35 @@ that can be refined and filtered to generate different views.</p>
 <span><span class="va">sig_network_py</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">vertices_df</span>, <span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span> <span class="op">|</span> <span class="va">Source</span> <span class="op">==</span> <span class="st">"Histone"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">r_to_py</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">edges_py</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">edges_df</span>, <span class="va">Complex</span> <span class="op">!=</span> <span class="st">"No ID"</span> <span class="op">|</span> <span class="va">Source</span> <span class="op">==</span> <span class="st">"Histone"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">r_to_py</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb45"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd, networkx <span class="im">as</span> nx</span>
-<span id="cb45-2"><a href="#cb45-2" tabindex="-1"></a><span class="im">from</span> pyvis.network <span class="im">import</span> Network</span></code></pre></div>
-<div class="sourceCode" id="cb46"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" tabindex="-1"></a><span class="co"># Create NetworkX graph object</span></span>
-<span id="cb46-2"><a href="#cb46-2" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
-<span id="cb46-3"><a href="#cb46-3" tabindex="-1"></a></span>
-<span id="cb46-4"><a href="#cb46-4" tabindex="-1"></a><span class="co"># Generate a nested dictionary/tuple with the node of interest ("Symbol") and </span></span>
-<span id="cb46-5"><a href="#cb46-5" tabindex="-1"></a><span class="co"># the relevant attributes (shape and complex)</span></span>
-<span id="cb46-6"><a href="#cb46-6" tabindex="-1"></a>node_list <span class="op">=</span> []</span>
-<span id="cb46-7"><a href="#cb46-7" tabindex="-1"></a><span class="cf">for</span> i, row <span class="kw">in</span> r.sig_network_py.iterrows():</span>
-<span id="cb46-8"><a href="#cb46-8" tabindex="-1"></a>  node_list.append((row[<span class="st">"Symbol"</span>], {<span class="st">"color"</span>: row.Colors, <span class="st">"Complex"</span>: row.Complex, <span class="st">"shape"</span>: row.Shapes}))</span>
-<span id="cb46-9"><a href="#cb46-9" tabindex="-1"></a>G.add_nodes_from(node_list)</span>
-<span id="cb46-10"><a href="#cb46-10" tabindex="-1"></a></span>
-<span id="cb46-11"><a href="#cb46-11" tabindex="-1"></a><span class="co"># Generate a tuple for edges connecting proteins with PTMs</span></span>
-<span id="cb46-12"><a href="#cb46-12" tabindex="-1"></a>edge_tup <span class="op">=</span> []</span>
-<span id="cb46-13"><a href="#cb46-13" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(r.edges_py[<span class="st">"Symbol"</span>])):</span>
-<span id="cb46-14"><a href="#cb46-14" tabindex="-1"></a>  edge_tup.append((r.edges_py[<span class="st">"Symbol"</span>][i], r.edges_py[<span class="st">"PTM"</span>][i]))</span>
-<span id="cb46-15"><a href="#cb46-15" tabindex="-1"></a>G.add_edges_from(edge_tup)</span>
-<span id="cb46-16"><a href="#cb46-16" tabindex="-1"></a></span>
-<span id="cb46-17"><a href="#cb46-17" tabindex="-1"></a><span class="co"># Remove self-loops</span></span>
-<span id="cb46-18"><a href="#cb46-18" tabindex="-1"></a>G.remove_edges_from(nx.selfloop_edges(G))</span>
-<span id="cb46-19"><a href="#cb46-19" tabindex="-1"></a></span>
-<span id="cb46-20"><a href="#cb46-20" tabindex="-1"></a><span class="co"># Now remove nodes without edges</span></span>
-<span id="cb46-21"><a href="#cb46-21" tabindex="-1"></a>lone_nodes <span class="op">=</span> [node <span class="cf">for</span> node, degree <span class="kw">in</span> G.degree() <span class="cf">if</span> degree <span class="op">==</span> <span class="dv">0</span>]</span>
-<span id="cb46-22"><a href="#cb46-22" tabindex="-1"></a>G.remove_nodes_from(lone_nodes)</span></code></pre></div>
-<div class="sourceCode" id="cb47"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="co"># To change the parameters of what's being graphed, adjust the initial call to Network()</span></span>
-<span id="cb47-2"><a href="#cb47-2" tabindex="-1"></a>net <span class="op">=</span> Network(height<span class="op">=</span><span class="st">"900px"</span>, notebook <span class="op">=</span> <span class="va">True</span>, select_menu <span class="op">=</span> <span class="va">True</span>, cdn_resources <span class="op">=</span> <span class="st">"in_line"</span>)</span>
-<span id="cb47-3"><a href="#cb47-3" tabindex="-1"></a>net.from_nx(G)</span>
-<span id="cb47-4"><a href="#cb47-4" tabindex="-1"></a>net.save_graph(<span class="st">"networkx-pyvis-MCF.html"</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd, networkx <span class="im">as</span> nx</span>
+<span id="cb46-2"><a href="#cb46-2" tabindex="-1"></a><span class="im">from</span> pyvis.network <span class="im">import</span> Network</span></code></pre></div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="co"># Create NetworkX graph object</span></span>
+<span id="cb47-2"><a href="#cb47-2" tabindex="-1"></a>G <span class="op">=</span> nx.Graph()</span>
+<span id="cb47-3"><a href="#cb47-3" tabindex="-1"></a></span>
+<span id="cb47-4"><a href="#cb47-4" tabindex="-1"></a><span class="co"># Generate a nested dictionary/tuple with the node of interest ("Symbol") and </span></span>
+<span id="cb47-5"><a href="#cb47-5" tabindex="-1"></a><span class="co"># the relevant attributes (shape and complex)</span></span>
+<span id="cb47-6"><a href="#cb47-6" tabindex="-1"></a>node_list <span class="op">=</span> []</span>
+<span id="cb47-7"><a href="#cb47-7" tabindex="-1"></a><span class="cf">for</span> i, row <span class="kw">in</span> r.sig_network_py.iterrows():</span>
+<span id="cb47-8"><a href="#cb47-8" tabindex="-1"></a>  node_list.append((row[<span class="st">"Symbol"</span>], {<span class="st">"color"</span>: row.Colors, <span class="st">"Complex"</span>: row.Complex, <span class="st">"shape"</span>: row.Shapes}))</span>
+<span id="cb47-9"><a href="#cb47-9" tabindex="-1"></a>G.add_nodes_from(node_list)</span>
+<span id="cb47-10"><a href="#cb47-10" tabindex="-1"></a></span>
+<span id="cb47-11"><a href="#cb47-11" tabindex="-1"></a><span class="co"># Generate a tuple for edges connecting proteins with PTMs</span></span>
+<span id="cb47-12"><a href="#cb47-12" tabindex="-1"></a>edge_tup <span class="op">=</span> []</span>
+<span id="cb47-13"><a href="#cb47-13" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(r.edges_py[<span class="st">"Symbol"</span>])):</span>
+<span id="cb47-14"><a href="#cb47-14" tabindex="-1"></a>  edge_tup.append((r.edges_py[<span class="st">"Symbol"</span>][i], r.edges_py[<span class="st">"PTM"</span>][i]))</span>
+<span id="cb47-15"><a href="#cb47-15" tabindex="-1"></a>G.add_edges_from(edge_tup)</span>
+<span id="cb47-16"><a href="#cb47-16" tabindex="-1"></a></span>
+<span id="cb47-17"><a href="#cb47-17" tabindex="-1"></a><span class="co"># Remove self-loops</span></span>
+<span id="cb47-18"><a href="#cb47-18" tabindex="-1"></a>G.remove_edges_from(nx.selfloop_edges(G))</span>
+<span id="cb47-19"><a href="#cb47-19" tabindex="-1"></a></span>
+<span id="cb47-20"><a href="#cb47-20" tabindex="-1"></a><span class="co"># Now remove nodes without edges</span></span>
+<span id="cb47-21"><a href="#cb47-21" tabindex="-1"></a>lone_nodes <span class="op">=</span> [node <span class="cf">for</span> node, degree <span class="kw">in</span> G.degree() <span class="cf">if</span> degree <span class="op">==</span> <span class="dv">0</span>]</span>
+<span id="cb47-22"><a href="#cb47-22" tabindex="-1"></a>G.remove_nodes_from(lone_nodes)</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" tabindex="-1"></a><span class="co"># To change the parameters of what's being graphed, adjust the initial call to Network()</span></span>
+<span id="cb48-2"><a href="#cb48-2" tabindex="-1"></a>net <span class="op">=</span> Network(height<span class="op">=</span><span class="st">"900px"</span>, notebook <span class="op">=</span> <span class="va">True</span>, select_menu <span class="op">=</span> <span class="va">True</span>, cdn_resources <span class="op">=</span> <span class="st">"in_line"</span>)</span>
+<span id="cb48-3"><a href="#cb48-3" tabindex="-1"></a>net.from_nx(G)</span>
+<span id="cb48-4"><a href="#cb48-4" tabindex="-1"></a>net.save_graph(<span class="st">"networkx-pyvis-MCF.html"</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">htmltools</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/htmltools/reference/renderDocument.html" class="external-link">renderDocument</a></span><span class="op">(</span><span class="fu">htmltools</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/htmltools/reference/htmlTemplate.html" class="external-link">htmlTemplate</a></span><span class="op">(</span><span class="st">"networkx-pyvis-MCF.html"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 
     
@@ -2651,30 +2605,23 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
                     <div class="row no-gutters">
                         <div class="col-10 pb-2">
                             <select class="form-select" aria-label="Default select example" onchange="selectNode([value]);" id="select-node" placeholder="Select node..."><option selected>Select a Node by ID</option>
-<option value="H3K14ac">H3K14ac</option>
-<option value="BRD7">BRD7</option>
-<option value="H3K27me3">H3K27me3</option>
-<option value="CBX6">CBX6</option>
-<option value="CBX8">CBX8</option>
-<option value="H3K27">H3K27</option>
-<option value="KDM6A">KDM6A</option>
-<option value="L3MBTL2">L3MBTL2</option>
-<option value="H3K36me2">H3K36me2</option>
-<option value="KDM2B">KDM2B</option>
-<option value="H3K36">H3K36</option>
 <option value="H3K4me">H3K4me</option>
 <option value="KMT2A">KMT2A</option>
 <option value="LAS1L">LAS1L</option>
 <option value="H3K4me2">H3K4me2</option>
 <option value="KDM1A">KDM1A</option>
 <option value="H3K4me3">H3K4me3</option>
-<option value="H3K4">H3K4</option>
-<option value="HMG20A">HMG20A</option>
-<option value="H3K9ac">H3K9ac</option>
+<option value="KDM2B">KDM2B</option>
 <option value="H3K9me">H3K9me</option>
 <option value="H3K9me3">H3K9me3</option>
+<option value="CBX6">CBX6</option>
+<option value="CBX8">CBX8</option>
 <option value="SUV39H1">SUV39H1</option>
-<option value="H3K9">H3K9</option></select>
+<option value="H3K9ac">H3K9ac</option>
+<option value="BRD7">BRD7</option>
+<option value="H3K14ac">H3K14ac</option>
+<option value="H3K27me3">H3K27me3</option>
+<option value="H3K36me2">H3K36me2</option></select>
 </div>
                         <div class="col-2 pb-2">
                             <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
@@ -2726,8 +2673,8 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"Complex": "No ID", "color": "gray", "id": "H3K14ac", "label": "H3K14ac", "shape": "triangleDown", "size": 10}, {"Complex": "SWI/SNF BRM-BRG1", "color": "blue", "id": "BRD7", "label": "BRD7", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K27me3", "label": "H3K27me3", "shape": "triangle", "size": 10}, {"Complex": "PRC1", "color": "red", "id": "CBX6", "label": "CBX6", "shape": "triangleDown", "size": 10}, {"Complex": "PRC1", "color": "blue", "id": "CBX8", "label": "CBX8", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K27", "label": "H3K27", "shape": "triangleDown", "size": 10}, {"Complex": "COMPASS-like MLL3,4", "color": "blue", "id": "KDM6A", "label": "KDM6A", "shape": "triangleDown", "size": 10}, {"Complex": "RING2-L3MBTL2", "color": "red", "id": "L3MBTL2", "label": "L3MBTL2", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K36me2", "label": "H3K36me2", "shape": "triangleDown", "size": 10}, {"Complex": "BCOR", "color": "blue", "id": "KDM2B", "label": "KDM2B", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K36", "label": "H3K36", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me", "label": "H3K4me", "shape": "triangleDown", "size": 10}, {"Complex": "COMPASS-like MLL1,2", "color": "red", "id": "KMT2A", "label": "KMT2A", "shape": "triangle", "size": 10}, {"Complex": "MLL4/WBP7", "color": "red", "id": "LAS1L", "label": "LAS1L", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me2", "label": "H3K4me2", "shape": "triangleDown", "size": 10}, {"Complex": "SCL", "color": "blue", "id": "KDM1A", "label": "KDM1A", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me3", "label": "H3K4me3", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4", "label": "H3K4", "shape": "triangle", "size": 10}, {"Complex": "LSD-CoREST", "color": "blue", "id": "HMG20A", "label": "HMG20A", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9ac", "label": "H3K9ac", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9me", "label": "H3K9me", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9me3", "label": "H3K9me3", "shape": "triangle", "size": 10}, {"Complex": "eNoSc", "color": "red", "id": "SUV39H1", "label": "SUV39H1", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9", "label": "H3K9", "shape": "triangleDown", "size": 10}]);
-                  edges = new vis.DataSet([{"from": "H3K14ac", "to": "BRD7", "width": 1}, {"from": "H3K27me3", "to": "CBX6", "width": 1}, {"from": "H3K27me3", "to": "CBX8", "width": 1}, {"from": "H3K27", "to": "KDM6A", "width": 1}, {"from": "H3K27", "to": "L3MBTL2", "width": 1}, {"from": "H3K36me2", "to": "KDM2B", "width": 1}, {"from": "H3K36", "to": "KDM2B", "width": 1}, {"from": "H3K4me", "to": "KMT2A", "width": 1}, {"from": "H3K4me", "to": "LAS1L", "width": 1}, {"from": "H3K4me2", "to": "KDM1A", "width": 1}, {"from": "H3K4me2", "to": "LAS1L", "width": 1}, {"from": "H3K4me3", "to": "KDM2B", "width": 1}, {"from": "H3K4", "to": "HMG20A", "width": 1}, {"from": "H3K4", "to": "KDM1A", "width": 1}, {"from": "H3K4", "to": "KDM2B", "width": 1}, {"from": "H3K4", "to": "KMT2A", "width": 1}, {"from": "H3K4", "to": "L3MBTL2", "width": 1}, {"from": "H3K4", "to": "LAS1L", "width": 1}, {"from": "H3K9ac", "to": "BRD7", "width": 1}, {"from": "H3K9me", "to": "KDM1A", "width": 1}, {"from": "H3K9me3", "to": "CBX6", "width": 1}, {"from": "H3K9me3", "to": "CBX8", "width": 1}, {"from": "H3K9me3", "to": "SUV39H1", "width": 1}, {"from": "H3K9", "to": "KDM1A", "width": 1}, {"from": "H3K9", "to": "L3MBTL2", "width": 1}]);
+                  nodes = new vis.DataSet([{"Complex": "No ID", "color": "gray", "id": "H3K4me", "label": "H3K4me", "shape": "triangleDown", "size": 10}, {"Complex": "COMPASS-like MLL1,2", "color": "red", "id": "KMT2A", "label": "KMT2A", "shape": "triangle", "size": 10}, {"Complex": "MLL4/WBP7", "color": "red", "id": "LAS1L", "label": "LAS1L", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me2", "label": "H3K4me2", "shape": "triangleDown", "size": 10}, {"Complex": "SCL", "color": "blue", "id": "KDM1A", "label": "KDM1A", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me3", "label": "H3K4me3", "shape": "triangleDown", "size": 10}, {"Complex": "BCOR", "color": "blue", "id": "KDM2B", "label": "KDM2B", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9me", "label": "H3K9me", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9me3", "label": "H3K9me3", "shape": "triangle", "size": 10}, {"Complex": "PRC1", "color": "red", "id": "CBX6", "label": "CBX6", "shape": "triangleDown", "size": 10}, {"Complex": "PRC1", "color": "blue", "id": "CBX8", "label": "CBX8", "shape": "triangleDown", "size": 10}, {"Complex": "eNoSc", "color": "red", "id": "SUV39H1", "label": "SUV39H1", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K9ac", "label": "H3K9ac", "shape": "triangleDown", "size": 10}, {"Complex": "SWI/SNF BRM-BRG1", "color": "blue", "id": "BRD7", "label": "BRD7", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K14ac", "label": "H3K14ac", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K27me3", "label": "H3K27me3", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K36me2", "label": "H3K36me2", "shape": "triangleDown", "size": 10}]);
+                  edges = new vis.DataSet([{"from": "H3K4me", "to": "KMT2A", "width": 1}, {"from": "H3K4me", "to": "LAS1L", "width": 1}, {"from": "H3K4me2", "to": "KDM1A", "width": 1}, {"from": "H3K4me2", "to": "LAS1L", "width": 1}, {"from": "H3K4me3", "to": "KDM2B", "width": 1}, {"from": "H3K9me", "to": "KDM1A", "width": 1}, {"from": "H3K9me3", "to": "CBX6", "width": 1}, {"from": "H3K9me3", "to": "CBX8", "width": 1}, {"from": "H3K9me3", "to": "SUV39H1", "width": 1}, {"from": "H3K9ac", "to": "BRD7", "width": 1}, {"from": "H3K14ac", "to": "BRD7", "width": 1}, {"from": "H3K27me3", "to": "CBX6", "width": 1}, {"from": "H3K27me3", "to": "CBX8", "width": 1}, {"from": "H3K36me2", "to": "KDM2B", "width": 1}]);
 
                   nodeColors = {};
                   allNodes = nodes.get({ returnType: "Object" });

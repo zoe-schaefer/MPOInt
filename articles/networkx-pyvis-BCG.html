@@ -969,16 +969,6 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
                             >
                                 <option selected>Select a Node by ID</option>
                                 
-                                    <option value="H3K27me2">H3K27me2</option>
-                                
-                                    <option value="EZH2">EZH2</option>
-                                
-                                    <option value="H3K27me3">H3K27me3</option>
-                                
-                                    <option value="H3K36me2">H3K36me2</option>
-                                
-                                    <option value="KDM2B">KDM2B</option>
-                                
                                     <option value="H3K4me">H3K4me</option>
                                 
                                     <option value="KMT2C">KMT2C</option>
@@ -992,6 +982,16 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
                                     <option value="WDR5">WDR5</option>
                                 
                                     <option value="H3K4me3">H3K4me3</option>
+                                
+                                    <option value="KDM2B">KDM2B</option>
+                                
+                                    <option value="H3K27me2">H3K27me2</option>
+                                
+                                    <option value="EZH2">EZH2</option>
+                                
+                                    <option value="H3K36me2">H3K36me2</option>
+                                
+                                    <option value="H3K27me3">H3K27me3</option>
                                 
                             </select>
                         </div>
@@ -1045,8 +1045,8 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"Complex": "No ID", "color": "gray", "id": "H3K27me2", "label": "H3K27me2", "shape": "triangle", "size": 10}, {"Complex": "PRC2", "color": "blue", "id": "EZH2", "label": "EZH2", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K27me3", "label": "H3K27me3", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K36me2", "label": "H3K36me2", "shape": "triangle", "size": 10}, {"Complex": "BCOR", "color": "blue", "id": "KDM2B", "label": "KDM2B", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me", "label": "H3K4me", "shape": "triangle", "size": 10}, {"Complex": "COMPASS-like MLL3,4", "color": "blue", "id": "KMT2C", "label": "KMT2C", "shape": "triangleDown", "size": 10}, {"Complex": "COMPASS-like MLL3,4", "color": "blue", "id": "KMT2D", "label": "KMT2D", "shape": "triangleDown", "size": 10}, {"Complex": "MLL4/WBP7", "color": "blue", "id": "MEN1", "label": "MEN1", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me2", "label": "H3K4me2", "shape": "triangle", "size": 10}, {"Complex": "COMPASS-like MLL3,4", "color": "blue", "id": "WDR5", "label": "WDR5", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me3", "label": "H3K4me3", "shape": "triangle", "size": 10}]);
-                  edges = new vis.DataSet([{"from": "H3K27me2", "to": "EZH2", "width": 1}, {"from": "H3K27me3", "to": "EZH2", "width": 1}, {"from": "H3K36me2", "to": "KDM2B", "width": 1}, {"from": "H3K4me", "to": "KMT2C", "width": 1}, {"from": "H3K4me", "to": "KMT2D", "width": 1}, {"from": "H3K4me", "to": "MEN1", "width": 1}, {"from": "H3K4me2", "to": "WDR5", "width": 1}, {"from": "H3K4me3", "to": "KDM2B", "width": 1}, {"from": "H3K4me3", "to": "WDR5", "width": 1}]);
+                  nodes = new vis.DataSet([{"Complex": "No ID", "color": "gray", "id": "H3K4me", "label": "H3K4me", "shape": "triangle", "size": 10}, {"Complex": "COMPASS-like MLL3,4", "color": "blue", "id": "KMT2C", "label": "KMT2C", "shape": "triangleDown", "size": 10}, {"Complex": "COMPASS-like MLL3,4", "color": "blue", "id": "KMT2D", "label": "KMT2D", "shape": "triangleDown", "size": 10}, {"Complex": "MLL4/WBP7", "color": "blue", "id": "MEN1", "label": "MEN1", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me2", "label": "H3K4me2", "shape": "triangle", "size": 10}, {"Complex": "COMPASS-like MLL3,4", "color": "blue", "id": "WDR5", "label": "WDR5", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K4me3", "label": "H3K4me3", "shape": "triangle", "size": 10}, {"Complex": "BCOR", "color": "blue", "id": "KDM2B", "label": "KDM2B", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K27me2", "label": "H3K27me2", "shape": "triangleDown", "size": 10}, {"Complex": "PRC2", "color": "blue", "id": "EZH2", "label": "EZH2", "shape": "triangleDown", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K36me2", "label": "H3K36me2", "shape": "triangle", "size": 10}, {"Complex": "No ID", "color": "gray", "id": "H3K27me3", "label": "H3K27me3", "shape": "triangleDown", "size": 10}]);
+                  edges = new vis.DataSet([{"from": "H3K4me", "to": "KMT2C", "width": 1}, {"from": "H3K4me", "to": "KMT2D", "width": 1}, {"from": "H3K4me", "to": "MEN1", "width": 1}, {"from": "H3K4me2", "to": "WDR5", "width": 1}, {"from": "H3K4me3", "to": "KDM2B", "width": 1}, {"from": "H3K4me3", "to": "WDR5", "width": 1}, {"from": "H3K27me2", "to": "EZH2", "width": 1}, {"from": "H3K36me2", "to": "KDM2B", "width": 1}, {"from": "H3K27me3", "to": "EZH2", "width": 1}]);
 
                   nodeColors = {};
                   allNodes = nodes.get({ returnType: "Object" });
