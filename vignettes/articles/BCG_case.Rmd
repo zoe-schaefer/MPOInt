@@ -240,11 +240,11 @@ phospho_GSEA_KEGG <- gseKEGG(geneList = phospho_GSEA_list, verbose = FALSE)
 ```
 
 ```{r phospho-enrich-plots}
-if (nrow(simple_phospho_GSEA_GO@result) > 0) {
-  dotplot(simple_phospho_GSEA_GO, showCategory = 20, font.size = rel(1), label_format = 50, title = "Phospho GO enrichment",
+if (nrow(phospho_GSEA_GO@result) > 0) {
+  dotplot(phospho_GSEA_GO, showCategory = 20, font.size = rel(1), label_format = 50, title = "Phospho GO enrichment",
           split = "ONTOLOGY") + facet_wrap(ONTOLOGY~.sign, scales = "free_y", ncol = 2)
 } else {
-  print("Error: no terms enriched under P-value cutoff (simple_phospho_GSEA_GO)")
+  print("Error: no terms enriched under P-value cutoff (phospho_GSEA_GO)")
 }
 
 if (nrow(phospho_GSEA_KEGG@result) > 0) {

@@ -151,13 +151,6 @@ if (nrow(total_GSEA_GO@result) > 0) {
   print("Error: no terms enriched under P-value cutoff (total_GSEA_GO)")
 }
 
-if (nrow(simple_total_GSEA_GO@result) > 0) {
-  dotplot(simple_total_GSEA_GO, showCategory = 20, font.size = rel(1), label_format = 40, title = "Simplified GO enrichment",
-          split = "ONTOLOGY") + facet_wrap(ONTOLOGY~.sign, scales = "free_y", ncol = 2)
-} else {
-  print("Error: no terms enriched under P-value cutoff (simple_total_GSEA_GO)")
-}
-
 if (nrow(total_GSEA_KEGG@result) > 0) {
   dotplot(total_GSEA_KEGG, showCategory = 20, font.size = rel(1), label_format = 40, title = "KEGG enrichment",
           split = ".sign") + facet_wrap(.~.sign)
