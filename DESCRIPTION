@@ -13,9 +13,11 @@ Depends:
     R (>= 3.5)
 LazyData: true
 Imports: 
+    BiocManager,
     dplyr,
     ggplot2,
     ggrepel,
+    OrganismDbi,
     qvalue,
     reticulate,
     rlang,
