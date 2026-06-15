@@ -28,7 +28,7 @@ library('BiocManager')
 # Install from CRAN if necessary
 CRAN_pkgs <- c("stringr", "tibble", "ggvenn", "devtools",
                "reticulate", "igraph", "tidyr", "BiocManager",
-               "ggrepel", "scales", "htmltools", "dplyr")
+               "ggrepel", "scales", "htmltools", "dplyr", "plotthis")
 package.check <- sapply(
   CRAN_pkgs,
   FUN = function(x) {
@@ -40,7 +40,7 @@ package.check <- sapply(
 )
 
 # Install from Bioconductor if necessary
-Bioc_pkgs <- c("clusterProfiler", "enrichplot",
+Bioc_pkgs <- c("clusterProfiler", "enrichplot", "qvalue",
                "OrganismDbi", "Homo.sapiens", "msigdbr")
 package.check <- sapply(
   Bioc_pkgs,
@@ -85,11 +85,15 @@ data(MCF7_total)
 # Dropping anything with an undefined or duplicate symbol
 MCF7_total <- MCF7_total %>%
   tidyr::drop_na(SYMBOL2) %>%
-  dplyr::distinct(SYMBOL2, .keep_all = TRUE)
+  dplyr::distinct(SYMBOL2, .keep_all = TRUE) %>% 
+  dplyr::rename("Symbol" = "SYMBOL2")
 # Assigning row names already done
+# Calculating Storey's q-value for FDR estimation
+MCF7_total$`Q value` <- qvalue(MCF7_total$`P value`)$qvalues
 
 # Creating a separate set of significant points for later analysis
-MCF7_total_sig <- dplyr::filter(MCF7_total, `P value` < total_p_threshold)
+MCF7_total_sig <- dplyr::filter(MCF7_total, `Q value` < total_p_threshold)
+MCF7_total_sig_unadj <- dplyr::filter(MCF7_total, `P value` < total_p_threshold)
 ```
 
 ## 1.1. Volcano plots
@@ -101,18 +105,21 @@ Here we create several volcano plots to show the data.
 options("ggrepel.max.overlaps" = 20)
 
 volcanoplot(df = MCF7_total, fc_col = "log2(FC)",
-            p_col = "P value", label_col = "SYMBOL2") +
-  ggtitle("Volcano plot") + xlab("log2(FC)") + ylab("-log10(P-value)")
+            p_col = "Q value", label_col = "Symbol") +
+  ggtitle("Volcano plot") + xlab("log2(FC)") + ylab("-log10(Q-value)")
 ```
 
 If you have known proteins of interest, use `volcano_groups()` to highlight them on a graph.
 
 ```{r total-groups}
 # For known groups of interest
-volcano_groups(df = MCF7_total, fc_col = "log2(FC)", p_col = "P value", label_col = "SYMBOL2",
-  group_list = list("Group 1" = c("TP53", "KMT2C", "NCOR1", "ARID1A", "SPEN", "FOXA1", "KMT2D", "KMT2A", "ATRX", "UBR5", "BRCA2", "RB1", "CHD4", "ATM", "SETD2", "CTCF"), "Group 2" = c("PIK3CA", "CDH1", "GATA3", "MUC16", "MAP3K1", "PTEN", "MAP2K4", "FAT3", "CSMD3", "NF1", "RUNX1", "TBX3", "FAT1", "AKAP9", "LRP1B", "MYH9", "BIRC6", "CBFB", "AKT1", "PIK3R1", "PTPRD", "ERBB2", "PREX2", "FAT4", "MUC4", "MED12", "RNF213", "NOTCH2", "FLNA", "ZFHX3", "ERBB3", "MTOR", "ANK1", "PTPRB"))) +
-  scale_color_manual(values = c("Group 1" = "red", "Group 2" = "blue", "None" = "gray")) +
-  ggtitle("Grouped volcano plot") + xlab("log2FC") + ylab("-log10P")
+# Setting this value - geom_text_repel will only show so many labels at once
+# for legibility reasons. Adjust this threshold to show more/fewer points.
+options("ggrepel.max.overlaps" = 20)
+volcano_groups(df = MCF7_total, fc_col = "log2(FC)", p_col = "Q value", label_col = "Symbol",
+  group_list = list("Group 1: Chromatin" = c("KMT2A", "H1-5", "H2BC21", "EP400", "RBBP6", "KDM4B", "CHD6"), "Group 2: ERBC" = c("RUNX1", "PTEN", "MAP3K1", "CCND1", "MYC", "AHNAK2", "IL20RA", "CCNB1", "EIF4EBP2", "PTGFRN", "PRKDC", "TBL1XR1", "CDKN1B", "SF3B5"))) +
+  scale_color_manual(values = c("Group 1: Chromatin" = "red", "Group 2: ERBC" = "blue", "None" = "gray")) +
+  ggtitle("Grouped volcano plot") + xlab("log2FC") + ylab("-log10(Q-value)")
 ```
 
 ## 1.2. GSEA
@@ -160,7 +167,7 @@ if (nrow(total_GSEA_KEGG@result) > 0) {
 ```
 ```{r clear-1}
 # Clearing large variables
-rm(MCF7_total, total_GSEA_GO, simple_total_GSEA_GO, total_GSEA_KEGG, total_GSEA_list)
+rm(total_GSEA_GO, simple_total_GSEA_GO, total_GSEA_KEGG, total_GSEA_list, MCF7_total)
 ```
 
 
@@ -184,10 +191,14 @@ MCF7_phospho <- MCF7_phospho %>%
 # Assigning row names
 MCF7_phospho <- MCF7_phospho %>%
   dplyr::mutate("SYMBOL" = `SYMBOL2`) %>%
-  tibble::column_to_rownames(var = "SYMBOL")
+  tibble::column_to_rownames(var = "SYMBOL") %>% 
+  dplyr::rename("Symbol" = "SYMBOL2")
+# Calculating Storey's q-value for FDR estimation
+MCF7_phospho$`Q value` <- qvalue(MCF7_phospho$`P value`)$qvalues
 
 # Creating a separate set of significant points for later analysis
-MCF7_phospho_sig <- dplyr::filter(MCF7_phospho, `P value` < phospho_p_threshold)
+MCF7_phospho_sig <- dplyr::filter(MCF7_phospho, `Q value` < phospho_p_threshold)
+MCF7_phospho_sig_unadj <- dplyr::filter(MCF7_phospho, `P value` < phospho_p_threshold)
 ```
 
 ## 2.1. Volcano plots
@@ -197,20 +208,16 @@ MCF7_phospho_sig <- dplyr::filter(MCF7_phospho, `P value` < phospho_p_threshold)
 options("ggrepel.max.overlaps" = 20)
 
 volcanoplot(df = MCF7_phospho, fc_col = "log2(FC)",
-            p_col = "P value", label_col = "SYMBOL2") +
-  ggtitle("Volcano plot") + xlab("log2(FC)") + ylab("-log10(P-value)")
+            p_col = "Q value", label_col = "Symbol") +
+  ggtitle("Volcano plot") + xlab("log2(FC)") + ylab("-log10(Q-value)")
 ```
 
 ```{r phospho-groups}
 # For known groups of interest
-volcano_groups(df = MCF7_phospho, fc_col = "log2(FC)", p_col = "P value", label_col = "SYMBOL2",
-  group_list = list("Group 1" = c("ASH2L", "ASXL1", "ASXL2", "BAP1", "BMI1", "CHD4", "EZH2", "DMAP1",
-  "EP400", "GATAD2B", "KANSL1", "KANSL3", "KMT2C", "KMT2D", "MBD3",
-  "MEN1", "MGA", "MRGBP", "MTA1", "NCOA6", "PHC2", "PHF20L1", "REST",
-  "RING1", "RUVBL1", "SAP130", "SCML2", "SIRT3", "SIRT6", "EP300"), "Group 2" = c("FANCI", "CDK14", "PRDM1", "ICAM1", "CDK1", "RUNX3", "NOTCH3", "CASP8",
-  "BST2", "CTSL", "MX2", "CASP1", "STAT2", "MX1"))) +
-  scale_color_manual(values = c("Group 1" = "red", "Group 2" = "blue", "None" = "gray")) +
-  ggtitle("Grouped volcano plot") + xlab("log2FC") + ylab("-log10P")
+volcano_groups(df = MCF7_phospho, fc_col = "log2(FC)", p_col = "Q value", label_col = "Symbol",
+  group_list = list("Group 1: Chromatin" = c("ASH2L", "SAP130", "REST", "CHD4", "EED", "KDM4A", "KDM1A", "RBBP4", "HIST1H4A", "KAT7", "SMARCAD1"), "Group 2: ERBC" = c("CDK1", "GATAD2B", "AKT2", "PARP1", "XRCC6", "AHNAK", "MAPK1"))) +
+  scale_color_manual(values = c("Group 1: Chromatin" = "red", "Group 2: ERBC" = "blue", "None" = "gray")) +
+  ggtitle("Grouped volcano plot") + xlab("log2FC") + ylab("-log10(Q-value)")
 ```
 
 ## 2.2. GSEA
@@ -246,8 +253,8 @@ if (nrow(phospho_GSEA_KEGG@result) > 0) {
 
 ```{r clear-2}
 # Clearing large variables
-rm(phospho_GSEA_GO, phospho_GSEA_KEGG, MCF7_phospho,
-   phospho_GSEA_list)
+rm(phospho_GSEA_GO, phospho_GSEA_KEGG,
+   phospho_GSEA_list, MCF7_phospho)
 ```
 
 # 3. Histone processing
@@ -270,10 +277,10 @@ histone_frag <- histone_summary(df = histone_frag_raw, label_col = "PTM", base_c
 ```{r fragment-plot}
 # Setting this value - geom_text_repel will only show so many labels at once
 # for legibility reasons. Adjust this threshold to show more/fewer points.
-options("ggrepel.max.overlaps" = 20)
+options("ggrepel.max.overlaps" = 7)
 
 volcano_epi(df = histone_frag, fc_col = "log2(FC)",
-            p_col = "P value", label_col = "PTM") +
+            p_col = "P_adj", label_col = "PTM") +
   labs(title = "Volcano plot", x = "log2(FC)", y = "-log10(P-value)")
 ```
 
@@ -291,7 +298,7 @@ histone_single <- histone_summary(df = histone_single_raw, label_col = "PTM", ba
 options("ggrepel.max.overlaps" = 20)
 
 volcano_epi(df = histone_single, fc_col = "log2(FC)",
-            p_col = "P value", label_col = "PTM") +
+            p_col = "P_adj", label_col = "PTM") +
   labs(title = "Volcano plot", x = "log2(FC)", y = "-log10(P-value)")
 ```
 
@@ -321,8 +328,8 @@ phospho_FC <- filter(MCF7_phospho_sig, abs(`log2(FC)`) > phospho_FC_threshold)
 # Generate plot
 ggvenn(list(
   "ER breast cancer" = GDA_ERBC$gene_symbol,
-  "Total proteome" = total_FC$SYMBOL2,
-  "Phosphoproteome" = phospho_FC$SYMBOL2),
+  "Total proteome" = total_FC$Symbol,
+  "Phosphoproteome" = phospho_FC$Symbol),
   fill_color = c("#440154", "#21908C", "#FDE725"),
   show_percentage = FALSE, text_size = 5) + ggtitle("MCF-7 enrichment") + theme(
   plot.title.position = "plot",
@@ -330,8 +337,8 @@ ggvenn(list(
 
 ggvenn(list(
   "Hypertension" = GDA_HT$gene_symbol,
-  "Total proteome" = total_FC$SYMBOL2,
-  "Phosphoproteome" = phospho_FC$SYMBOL2),
+  "Total proteome" = total_FC$Symbol,
+  "Phosphoproteome" = phospho_FC$Symbol),
   fill_color = c("#440154", "#21908C", "#FDE725"),
   show_percentage = FALSE, text_size = 5) + ggtitle("MCF-7 enrichment") + theme(
   plot.title.position = "plot",
@@ -339,8 +346,8 @@ ggvenn(list(
 
 ggvenn(list(
   "Ovarian cancer" = GDA_OvCa$gene_symbol,
-  "Total proteome" = total_FC$SYMBOL2,
-  "Phosphoproteome" = phospho_FC$SYMBOL2),
+  "Total proteome" = total_FC$Symbol,
+  "Phosphoproteome" = phospho_FC$Symbol),
   fill_color = c("#440154", "#21908C", "#FDE725"),
   show_percentage = FALSE, text_size = 5) + ggtitle("MCF-7 enrichment") + theme(
   plot.title.position = "plot",
@@ -356,18 +363,18 @@ ERBC_intersections <- data.frame("Intersection" = character(),
                                  stringsAsFactors = FALSE)
 ERBC_intersections <- ERBC_intersections %>%
   add_row("Intersection" = "ER breast cancer/Phospho",
-          "Hits" = paste(sort(intersect(GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2)),
+          "Hits" = paste(sort(intersect(GDA_ERBC$gene_symbol, phospho_FC$Symbol)),
                          collapse = ", ")) %>% 
   add_row("Intersection" = "ER breast cancer/Total",
-          "Hits" = paste(sort(intersect(GDA_ERBC$gene_symbol, total_FC$SYMBOL2)),
+          "Hits" = paste(sort(intersect(GDA_ERBC$gene_symbol, total_FC$Symbol)),
                          collapse = ", ")) %>% 
   add_row("Intersection" = "Total/Phospho",
-          "Hits" = paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)),
+          "Hits" = paste(sort(intersect(total_FC$Symbol, phospho_FC$Symbol)),
                          collapse = ", ")) %>% 
   add_row("Intersection" = "ER breast cancer/Phospho/Total",
           "Hits" = paste(sort(intersect(intersect(
-            GDA_ERBC$gene_symbol, phospho_FC$SYMBOL2),
-            total_FC$SYMBOL2)), collapse = ", "))
+            GDA_ERBC$gene_symbol, phospho_FC$Symbol),
+            total_FC$Symbol)), collapse = ", "))
 
 knitr::kable(ERBC_intersections, caption = "ERBC intersections")
 ```
@@ -378,18 +385,18 @@ HT_intersections <- data.frame("Intersection" = character(),
                                  stringsAsFactors = FALSE)
 HT_intersections <- HT_intersections %>%
   add_row("Intersection" = "Hypertension/Phospho",
-          "Hits" = paste(sort(intersect(GDA_HT$gene_symbol, phospho_FC$SYMBOL2)),
+          "Hits" = paste(sort(intersect(GDA_HT$gene_symbol, phospho_FC$Symbol)),
                          collapse = ", ")) %>% 
   add_row("Intersection" = "Hypertension/Total",
-          "Hits" = paste(sort(intersect(GDA_HT$gene_symbol, total_FC$SYMBOL2)),
+          "Hits" = paste(sort(intersect(GDA_HT$gene_symbol, total_FC$Symbol)),
                          collapse = ", ")) %>% 
   add_row("Intersection" = "Total/Phospho",
-          "Hits" = paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)),
+          "Hits" = paste(sort(intersect(total_FC$Symbol, phospho_FC$Symbol)),
                          collapse = ", ")) %>% 
   add_row("Intersection" = "Hypertension/Phospho/Total",
           "Hits" = paste(sort(intersect(intersect(
-            GDA_HT$gene_symbol, phospho_FC$SYMBOL2),
-            total_FC$SYMBOL2)), collapse = ", "))
+            GDA_HT$gene_symbol, phospho_FC$Symbol),
+            total_FC$Symbol)), collapse = ", "))
 
 knitr::kable(HT_intersections, caption = "Hypertension intersections")
 ```
@@ -400,18 +407,18 @@ OvCa_intersections <- data.frame("Intersection" = character(),
                                  stringsAsFactors = FALSE)
 OvCa_intersections <- OvCa_intersections %>%
   add_row("Intersection" = "Ovarian cancer/Phospho",
-          "Hits" = paste(sort(intersect(GDA_OvCa$gene_symbol, phospho_FC$SYMBOL2)),
+          "Hits" = paste(sort(intersect(GDA_OvCa$gene_symbol, phospho_FC$Symbol)),
                          collapse = ", ")) %>% 
   add_row("Intersection" = "Ovarian cancer/Total",
-          "Hits" = paste(sort(intersect(GDA_OvCa$gene_symbol, total_FC$SYMBOL2)),
+          "Hits" = paste(sort(intersect(GDA_OvCa$gene_symbol, total_FC$Symbol)),
                          collapse = ", ")) %>% 
   add_row("Intersection" = "Total/Phospho",
-          "Hits" = paste(sort(intersect(total_FC$SYMBOL2, phospho_FC$SYMBOL2)),
+          "Hits" = paste(sort(intersect(total_FC$Symbol, phospho_FC$Symbol)),
                          collapse = ", ")) %>% 
   add_row("Intersection" = "Ovarian cancer/Phospho/Total",
           "Hits" = paste(sort(intersect(intersect(
-            GDA_OvCa$gene_symbol, phospho_FC$SYMBOL2),
-            total_FC$SYMBOL2)), collapse = ", "))
+            GDA_OvCa$gene_symbol, phospho_FC$Symbol),
+            total_FC$Symbol)), collapse = ", "))
 
 knitr::kable(OvCa_intersections, caption = "Ovarian cancer intersections")
 ```
@@ -427,232 +434,98 @@ This section develops a network visualization of all epigenetic interactions as 
 
 The `data(genes)` call imports a .csv file included with the MPOInt package, but can be replaced to update or change the database by downloading and importing the "Table of all proteins" file on the EpiFactors website.
 
-```{r network-setup}
-data(genes)
-total_join <- inner_join(genes, dplyr::select(MCF7_total_sig, "log2(FC)", "P value", "SYMBOL2"), by = join_by("HGNC approved symbol" == "SYMBOL2"), multiple = "any") %>% 
-  mutate("Source" = "Total")
-
-phospho_join <- inner_join(genes, dplyr::select(MCF7_phospho_sig, "log2(FC)", "P value", "SYMBOL2"), by = join_by("HGNC approved symbol" == "SYMBOL2"), multiple = "any") %>% 
-  mutate("Source" = "Phospho")
-
-joined_data <- full_join(total_join, phospho_join)
-
-# Assigning differential expression identifiers
-joined_data$Diff <- case_when(joined_data$`log2(FC)` > 0 ~ "Up",
-                             joined_data$`log2(FC)` < 0 ~ "Down")
-```
-
-```{r network-proteins}
-# Plotting all relevant proteins from the two combined datasets
-ggplot(joined_data, aes(x = `log2(FC)`, y = -log10(`P value`))) +
-  geom_point(aes(color = Source)) +
-  geom_vline(xintercept = c(total_FC_threshold, -total_FC_threshold),
-             alpha = 0.5, linetype = "dashed") +
-  geom_hline(yintercept = -log10(total_p_threshold),
-             alpha = 0.5, linetype = "dashed") +
-  labs(x = "log2(Fold Change)", y = "-log10(P value)",
-       title = "Combined data") +
-  geom_text_repel(aes(label = `HGNC approved symbol`), show.legend = FALSE,
-                  size = rel(3), max.overlaps = 20) +
-  theme(legend.position = "bottom")
-```
-```{r network-histone-import}
-# Formatting histone targets
-targets <- str_replace_all(str_flatten_comma(str_unique(c(joined_data$Product, joined_data$`Target entity`))), ", ", "|")
-
-# Filter by that list
-total_histone_int <- filter(histone_single, grepl(targets, PTM))
-total_histone_int$Diff <- case_when(total_histone_int$`log2(FC)` > 0 ~ "Up",
-                             total_histone_int$`log2(FC)` < 0 ~ "Down",
-                             .default = "0")
-total_histone_int <- filter(total_histone_int, !grepl("unmod", PTM))
-
-# Making sure that no histone data has gotten lost in processing - 
-# this should match the figure from the earlier section
-ggplot(total_histone_int, aes(x = `log2(FC)`, y = -log10(`P value`))) +
-  geom_point() +
-  geom_vline(xintercept = c(total_FC_threshold, -total_FC_threshold),
-             alpha = 0.5, linetype = "dashed") +
-  geom_hline(yintercept = -log10(total_p_threshold),
-             alpha = 0.5, linetype = "dashed") +
-  labs(x = "log2(Fold Change)", y = "-log10(P value)",
-       title = "Included histone PTMs") +
-  geom_text_repel(aes(label = PTM), show.legend = FALSE, size = rel(3)) +
-  theme(legend.position = "bottom")
-```
-
-```{r network-genes}
-# Pivoting and formatting the gene list
-genes_pivoted <- dplyr::select(genes, c("HGNC approved symbol", "Protein complex", "Target entity", "Product")) %>% dplyr::rename("Symbol" = "HGNC approved symbol", "Complex" = "Protein complex", "Target" = "Target entity", "Product" = "Product")
-
-genes_pivoted <- genes_pivoted %>% 
-  separate_wider_delim(cols = c("Complex", "Target", "Product"), delim = ", ",
-                       names_sep = "_", too_few = "align_start")
-
-genes_pivoted <- genes_pivoted %>% 
-  pivot_longer(cols = dplyr::starts_with("Complex"), names_to = NULL,
-               values_to = "Complex", values_drop_na = TRUE) %>% 
-  pivot_longer(cols = dplyr::starts_with("Target"), names_to = NULL,
-               values_to = "Target", values_drop_na = TRUE) %>% 
-  pivot_longer(cols = dplyr::starts_with("Product"), names_to = NULL,
-               values_to = "Product", values_drop_na = TRUE)
-
-
-genes_data_joined <- inner_join(genes_pivoted,
-                                dplyr::select(joined_data, c("HGNC approved symbol",
-                                                      "log2(FC)", "P value", "Source")),
-                                by = join_by("Symbol" == "HGNC approved symbol"),
-                                relationship = "many-to-many")
-```
-
-```{r network-format}
-# Getting the lists into the right format for the igraph visualization
-genes_histone_pivoted <- pivot_longer(genes_data_joined, cols = c("Target", "Product"), names_to = NULL,
-             values_to = "PTM") %>% distinct()
-genes_histone_pivoted$Diff <- case_when(genes_histone_pivoted$`log2(FC)` > 0 ~ "Up",
-                             genes_histone_pivoted$`log2(FC)` < 0 ~ "Down",
-                             .default = "0")
-
-genes_histone_joined <- right_join(genes_histone_pivoted,
-                                dplyr::select(total_histone_int, c("PTM",
-                                                      "log2(FC)", "P value", "Diff")),
-                                by = c("PTM" = "PTM"), suffix = c("_gene", "_hist"),
-                                relationship = "many-to-many"
-                                )
-genes_histone_joined <- relocate(genes_histone_joined, Complex, .after = PTM)
-
-# Ensuring no NA values remain, replacing "#" with a clearer identifier
-genes_histone_joined[genes_histone_joined == "#"] <- "No ID"
-genes_histone_joined$Complex <- genes_histone_joined$Complex %>%  replace_na("No ID")
-```
-
-
-```{r vertices-edges}
-# Generating a dataframe for edges and a dataframe for unique vertices with metadata
-complexes <- unique(genes_histone_joined$Complex)
-n_complexes <- seq(1, length(complexes))
-complex_df <- data.frame(complexes, n_complexes)
-
-# Ensuring all histone PTMs have the same complex and source labels
-histone_df <- dplyr::select(total_histone_int, c("PTM", "Diff"))
-histone_df$Symbol <- histone_df$PTM
-histone_df$Complex <- "No ID"
-histone_df$Source <- "Histone"
-
-vertices_df <- bind_rows(histone_df, dplyr::select(genes_histone_pivoted, !c("log2(FC)", "P value"))) %>% relocate("Symbol")
-vertices_df <- filter(vertices_df, grepl("^H", PTM))
-vertices_df$Complex <- case_when(vertices_df$Complex == "#" ~ "No ID",
-                            .default = vertices_df$Complex)
-
-# Creating a dataframe connecting edges (source and target vertices)
-complex_vertices <- data.frame(vertices = c(unique(genes_histone_joined$Symbol), unique(genes_histone_joined$PTM)))
-edges_df <- full_join(genes_histone_joined, complex_df, by = join_by("Complex" == "complexes")) %>% relocate(c("Symbol", "PTM"))
-edges_df <- left_join(complex_vertices, edges_df, by = join_by("vertices" == "Symbol")) %>% dplyr::rename("Symbol" = "vertices")
-
-edges_df$Symbol <- case_when(is.na(edges_df$Symbol) ~ edges_df$PTM,
-                               .default = edges_df$Symbol)
-edges_df$PTM <- case_when(is.na(edges_df$PTM) ~ edges_df$Symbol,
-                               .default = edges_df$PTM)
-edges_df$Source <- case_when(is.na(edges_df$Source) ~ "Histone",
-                               .default = edges_df$Source)
-edges_df$Complex <- case_when(is.na(edges_df$Complex) ~ "No ID",
-                               .default = edges_df$Complex)
-edges_df$Diff <- case_when(edges_df$Source == "Histone" ~ edges_df$Diff_hist,
-                             .default = edges_df$Diff_gene)
-edges_df <- drop_na(edges_df, Diff)
-```
-
-This alternative visualization shows the members of the identified complexes without connections.
-
-```{r network-bars}
-sig_network <- distinct(group_by(filter(edges_df, Complex != "No ID"), Complex), Symbol, .keep_all = TRUE)
-sig_network["weight"] <- 1
-sig_network$Complex <- factor(sig_network$Complex, levels = unique(as.character(sig_network$Complex)))
-
-ggplot(sig_network, aes(x = Complex, y = Symbol, fill = PTM)) +
-  geom_bin_2d(binwidth = 1, center = 0) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1),
-        axis.title.x = element_blank(), axis.title.y = element_blank()) +
-  scale_fill_viridis_d() +
-  scale_y_discrete(limits = rev) +
-  labs(title = "Network bins")
-```
+It is important to note that here we choose to use all histones identified and limit the proteome/phosphoproteome by unadjusted P value rather than the FDR-corrected Q value. Given that this tool is intended for discovery and requires downstream validation of its findings, as well as the lack of in-depth resources detailing epigenetic interactions, we chose to include as many potential hits as possible, then evaluate the findings based on the context of the overall developed network in addition to the epiproteome fragment analysis. Below, we also generate a smaller network abiding by more rigorous statistical standards as a demonstration.
 
 ## 5.1 Complex and member identification
 For future research use, we generate multiple tables containing the identified complexes, members, common targets, and identified PTMs.
 
-```{r complex-list, results = "asis"}
-# Identified complexes
-final_complexes <- filter(vertices_df, vertices_df$Source != "Histone") %>% filter(Complex != "No ID") %>% drop_na() %>% distinct()
-final_complex_list <- sort(unique(final_complexes$Complex))
+```{r network-setup}
+# Adding framework for connections
+data(genes)
+# Creating the network object with the significant peptide subsets
+net_created <- 
+  multi_net(genes_df = genes, total_df = MCF7_total_sig_unadj,
+            phospho_df = MCF7_phospho_sig_unadj,
+            # Point to the gene symbols and transformed FC values
+            symbol_col = "Symbol", fc_col = "log2(FC)",
+            # The network will not assemble with the fragment data
+            epi_single_df = histone_single,
+            epi_symbol_col = "PTM", epi_fc_col = "log2(FC)")
 
-cat(paste("**Networked Complexes:** ", paste(final_complex_list, collapse = ", ")))
+# Accessing the plots and lists created as part of the object
+net_created$grid
+net_created$complex_list
+knitr::kable(net_created$member_list)
+knitr::kable(net_created$gene_list)
 ```
 
-```{r complex-members}
-# List members of each
-final_members <- data.frame("Complex" = "", "Members" = "", "PTMs" = "")
+```{r tables}
+# Getting a dataframe with the significant network members
+sn_df <- net_created$ts
 
-for (complex in final_complex_list) {
-  member_df <- filter(final_complexes, final_complexes$Complex == complex)
-  member_list <- paste0(unique(member_df$Symbol), collapse = ", ")
-  member_PTMs <- paste0(unique(member_df$PTM), collapse = ", ")
-  final_members <- final_members %>% add_row("Complex" = complex, "Members" = member_list, "PTMs" = member_PTMs)
-}
+# Creating two tables (centered on protein, then centered on histone PTMs) with
+# more descriptive information
+sn_collapsed_gene <- sn_df %>%
+  group_by(Symbol, `log2(FC)_gene`, `P value`) %>%
+  summarize(Source = paste(unique(Source), collapse = ", "), PTMs = paste(unique(PTM), collapse = ", "), Complexes = paste(unique(Complex), collapse = ", ")) %>% 
+  rename("log2(FC)_gene" = "log2(FC) (gene)")
+knitr::kable(sn_collapsed_gene)
 
-knitr::kable(final_members)
+
+sn_collapsed_PTM <- sn_df %>%
+  group_by(PTM, `log2(FC)_hist`) %>%
+  summarize(Genes = paste(unique(Symbol), collapse = ", "), Complexes = paste(unique(Complex), collapse = ", ")) %>% 
+  rename("log2(FC)_hist" = "log2(FC) (PTM)")
+knitr::kable(sn_collapsed_PTM)
 ```
 
-```{r complex-PTMs}
-# Differential PTMs
-final_PTMs <- distinct(final_complexes, pick(PTM, Diff)) %>% dplyr::rename("Differential expression" = "Diff")
-knitr::kable(final_PTMs)
-```
+```{r sankey}
+# Creating a Sankey flow diagram for an alternate representation
+# of how complexes, PTMs, and members are connected
+sankey_sn <- sn_df
+sankey_sn$Complex <- str_wrap(sankey_sn$Complex, 10)
+node_names <- unique(c(sankey_sn$PTM, unique(sankey_sn$Complex)))
 
+v_pal_res <- (viridis_pal(begin = 0.1, option = "D")(length(node_names)))
+names(v_pal_res) <- node_names
 
-```{r complex-genes}
-# Genes
-final_proteins <- unique(final_complexes$Symbol)
-final_func <- filter(genes, genes$`HGNC approved symbol` %in% final_proteins) %>% dplyr::select(!c("UniProt ID (human)"))
-knitr::kable(final_func)
+link_pal <- rep("gray60", times = length(unique(sankey_sn$Symbol)))
+names(link_pal) <- unique(sankey_sn$Symbol)
+
+SankeyPlot(arrange(sankey_sn, PTM), x = c("PTM", "Complex"), in_form = "wide",
+           links_fill_by = "Symbol", nodes_label = TRUE, xlab = "", ylab = "",
+           expand = c(0.1, 0.6), facet_by = "Symbol", facet_scales = "free_y",
+           aspect.ratio = 1, facet_ncol = 4, theme_args = list(strip.background = ggplot2::element_rect(fill="grey80")), nodes_legend = "separate",
+           links_palcolor = link_pal, links_color = ".fill",
+           nodes_palcolor = v_pal_res) +
+  theme(legend.position = "none", axis.text.y = element_blank(), axis.ticks.y = element_blank())
 ```
 
 ## 5.2 Python visualization
 Finally, we create an interactive network using Python via the `reticulate` package. This allows a dynamic visualization that can be refined and filtered to generate different views.
 
-```{r py-import}
-vertices_df$Shapes <- case_when(vertices_df$Diff == "Up" ~ "triangle",
-                             vertices_df$Diff == "Down" ~ "triangleDown",
-                          vertices_df$Diff == "0" ~ "ellipse")
-vertices_df$Colors <- case_when(vertices_df$Source == "Total" ~ "red",
-                          vertices_df$Source == "Phospho" ~ "blue",
-                          vertices_df$Source == "Histone" ~ "gray")
-
-sig_network_py <- filter(vertices_df, Complex != "No ID" | Source == "Histone") %>% r_to_py()
-
-edges_py <- filter(edges_df, Complex != "No ID" | Source == "Histone") %>% r_to_py()
+```{r py-setup}
+net_edges_py <- r_to_py(net_created$net_edges)
+net_vertices_py <- r_to_py(net_created$net_vertices)
 ```
 
-```{python py-setup}
+```{python py-network-graph}
 import pandas as pd, networkx as nx
 from pyvis.network import Network
-```
-
-```{python py-network}
 # Create NetworkX graph object
 G = nx.Graph()
 
 # Generate a nested dictionary/tuple with the node of interest ("Symbol") and 
 # the relevant attributes (shape and complex)
 node_list = []
-for i, row in r.sig_network_py.iterrows():
-  node_list.append((row["Symbol"], {"color": row.Colors, "Complex": row.Complex, "shape": row.Shapes}))
+for i, row in r.net_vertices_py.iterrows():
+  node_list.append((row["Symbol"], {"color": {"background": row.Colors, "border": row.Border}, "Complex": row.Complex, "shape": row.Shapes}))
 G.add_nodes_from(node_list)
 
 # Generate a tuple for edges connecting proteins with PTMs
 edge_tup = []
-for i in range(len(r.edges_py["Symbol"])):
-  edge_tup.append((r.edges_py["Symbol"][i], r.edges_py["PTM"][i]))
+for i in range(len(r.net_edges_py["Symbol"])):
+  edge_tup.append((r.net_edges_py["Symbol"][i], r.net_edges_py["PTM"][i]))
 G.add_edges_from(edge_tup)
 
 # Remove self-loops
@@ -661,9 +534,6 @@ G.remove_edges_from(nx.selfloop_edges(G))
 # Now remove nodes without edges
 lone_nodes = [node for node, degree in G.degree() if degree == 0]
 G.remove_nodes_from(lone_nodes)
-```
-
-```{python py-network-graph}
 # To change the parameters of what's being graphed, adjust the initial call to Network()
 net = Network(height="900px", notebook = True, select_menu = True, cdn_resources = "in_line")
 net.from_nx(G)
@@ -672,4 +542,107 @@ net.save_graph("networkx-pyvis-MCF.html")
 
 ```{r print-HTML}
 htmltools::renderDocument(htmltools::htmlTemplate("networkx-pyvis-MCF.html"))
+```
+
+## 5.3 Minimal network
+
+```{r network-setup-2}
+# This value (and selected metric) can be adjusted to fit the data
+histone_single_p <- filter(histone_single, `P_unadj` < 0.2)
+
+# Now making a network with a subset of histones, as well as
+# proteome/phosphoproteome peptides that meet the FDR-adjusted threshold
+net_created_hp <- multi_net(genes_df = genes, total_df = MCF7_total_sig,
+          phospho_df = MCF7_phospho_sig, symbol_col = "Symbol", fc_col = "log2(FC)",
+          epi_single_df = histone_single_p,
+          epi_symbol_col = "PTM", epi_fc_col = "log2(FC)")
+net_created_hp$grid
+net_created_hp$complex_list
+net_created_hp$member_list
+net_created_hp$gene_list
+net_created_hp$PTM_list
+```
+
+```{r tables-2}
+# Getting a dataframe with the network members
+sn_df_hp <- net_created_hp$ts
+
+# Creating two tables (centered on protein, then centered on histone PTMs) with
+# more descriptive information
+sn_collapsed_gene_hp <- sn_df_hp %>%
+  group_by(Symbol, `log2(FC)_gene`, `P value`) %>%
+  summarize(Source = paste(unique(Source), collapse = ", "), PTMs = paste(unique(PTM), collapse = ", "), Complexes = paste(unique(Complex), collapse = ", ")) %>% 
+  rename("log2(FC)_gene" = "log2(FC) (gene)")
+knitr::kable(sn_collapsed_gene_hp)
+
+
+sn_collapsed_PTM_hp <- sn_df_hp %>%
+  group_by(PTM, `log2(FC)_hist`) %>%
+  summarize(Genes = paste(unique(Symbol), collapse = ", "), Complexes = paste(unique(Complex), collapse = ", ")) %>% 
+  rename("log2(FC)_hist" = "log2(FC) (PTM)")
+knitr::kable(sn_collapsed_PTM_hp)
+```
+
+
+
+```{r sankey-2}
+# Creating a Sankey flow diagram for an alternate representation
+# of how complexes, PTMs, and members are connected
+sankey_sn_hp <- sn_df_hp
+sankey_sn_hp$Complex <- str_wrap(sankey_sn_hp$Complex, 10)
+node_names_hp <- unique(c(sankey_sn_hp$PTM, unique(sankey_sn_hp$Complex)))
+
+v_pal_res_hp <- (viridis_pal(begin = 0.1, option = "D")(length(node_names_hp)))
+names(v_pal_res_hp) <- node_names_hp
+
+link_pal_hp <- rep("gray60", times = length(unique(sankey_sn_hp$Symbol)))
+names(link_pal_hp) <- unique(sankey_sn_hp$Symbol)
+
+SankeyPlot(arrange(sankey_sn_hp, PTM), x = c("PTM", "Complex"), in_form = "wide",
+           links_fill_by = "Symbol", nodes_label = TRUE, xlab = "", ylab = "",
+           expand = c(0.1, 0.6), facet_by = "Symbol", facet_scales = "free_y",
+           aspect.ratio = 1, facet_ncol = 4, theme_args = list(strip.background = ggplot2::element_rect(fill="grey80")), nodes_legend = "separate",
+           links_palcolor = link_pal_hp, links_color = ".fill",
+           nodes_palcolor = v_pal_res_hp) +
+  theme(legend.position = "none", axis.text.y = element_blank(), axis.ticks.y = element_blank())
+```
+
+```{r py-setup-2}
+net_edges_py_hp <- r_to_py(net_created_hp$net_edges)
+net_vertices_py_hp <- r_to_py(net_created_hp$net_vertices)
+```
+
+```{python py-network-graph-2}
+import pandas as pd, networkx as nx
+from pyvis.network import Network
+# Create NetworkX graph object
+G2 = nx.Graph()
+
+# Generate a nested dictionary/tuple with the node of interest ("Symbol") and 
+# the relevant attributes (shape and complex)
+node_list_hp = []
+for i, row in r.net_vertices_py_hp.iterrows():
+  node_list_hp.append((row["Symbol"], {"color": {"background": row.Colors, "border": row.Border}, "Complex": row.Complex, "shape": row.Shapes}))
+G2.add_nodes_from(node_list_hp)
+
+# Generate a tuple for edges connecting proteins with PTMs
+edge_tup_hp = []
+for i in range(len(r.net_edges_py_hp["Symbol"])):
+  edge_tup_hp.append((r.net_edges_py_hp["Symbol"][i], r.net_edges_py_hp["PTM"][i]))
+G2.add_edges_from(edge_tup_hp)
+
+# Remove self-loops
+G2.remove_edges_from(nx.selfloop_edges(G2))
+
+# Now remove nodes without edges
+lone_nodes_hp = [node for node, degree in G2.degree() if degree == 0]
+G2.remove_nodes_from(lone_nodes_hp)
+# To change the parameters of what's being graphed, adjust the initial call to Network()
+net2 = Network(height="900px", notebook = True, select_menu = True, cdn_resources = "in_line")
+net2.from_nx(G2)
+net2.save_graph("networkx-pyvis-MCF2.html")
+```
+
+```{r print-HTML-2}
+htmltools::renderDocument(htmltools::htmlTemplate("networkx-pyvis-MCF2.html"))
 ```

@@ -12,8 +12,10 @@
 #'
 #' @import dplyr
 #' @import tibble
+#' @import qvalue
 #'
 #' @importFrom rlang .data
+#' @importFrom stats p.adjust
 #'
 #' @export
 #'
@@ -65,8 +67,9 @@ histone_epi <- function(df, label_col, base_cols, target_cols, ...){
   df_pvals <- df_clean %>%
     dplyr::rowwise() %>%
     filter(is_constant == FALSE) %>%
-    dplyr::mutate("P value" = stats::t.test(c_across(all_of(base_cols)), c_across(all_of(target_cols)),
+    dplyr::mutate("P_unadj" = stats::t.test(c_across(all_of(base_cols)), c_across(all_of(target_cols)),
                               alternative = "two.sided", var.equal = TRUE)$p.value)
+  df_pvals$`P value` <- p.adjust(df_pvals$P_unadj, method = "BH")
 
   df_clean <- dplyr::full_join(df_clean, df_pvals)
   df_clean$"log2(FC)"[df_clean$"log2(FC)" == "NaN"] <- NA

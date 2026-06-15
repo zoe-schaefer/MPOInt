@@ -90,9 +90,7 @@ clean_names <- function(df, label_col, ...){
                      dplyr::mutate("PTM4" = stringr::str_split_i(`subset`, "(?=K)", i = -1)) %>%
                      dplyr::mutate("PTM3" = stringr::str_split_i(`subset`, "(?=K)", i = -2)) %>%
                      dplyr::mutate("PTM2" = stringr::str_split_i(`subset`, "(?=K)", i = -3)) %>%
-                     dplyr::mutate("PTM1" = stringr::str_remove(`subset`, `PTM2`)) %>%
-                     dplyr::mutate("PTM1" = stringr::str_remove(`PTM1`, `PTM3`)) %>%
-                     dplyr::mutate("PTM1" = stringr::str_remove(`PTM1`, `PTM4`)))
+                     dplyr::mutate("PTM1" = stringr::str_split_i(`subset`, "(?=K)", i = -4)))
 
   single_df_raw <- replace(single_df_raw, single_df_raw == "", NA)
 
@@ -103,9 +101,11 @@ clean_names <- function(df, label_col, ...){
     tidyr::unite(col = "PTM", c(`PTM`, `single_PTM`), sep = " ", remove = TRUE) %>%
     dplyr::mutate("PTM" = stringr::str_squish(PTM))
 
-  single_df_long$PTM <- stringr::str_remove(single_df_long$PTM, " .+ ") %>%
-    stringr::str_replace("me1", "me")
-  single_df <- dplyr::distinct(dplyr::bind_rows(single_df_long, single_df_unmod), PTM, .keep_all = TRUE)
+
+  single_df_long$PTM <- stringr::str_remove(single_df_long$PTM, " .+ ")
+
+  single_df <- dplyr::bind_rows(single_df_long, single_df_unmod) %>%
+    dplyr::distinct(PTM, .keep_all = TRUE)
 
   return(list(single_df, frag_df))
 }

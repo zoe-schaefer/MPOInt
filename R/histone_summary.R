@@ -15,6 +15,7 @@
 #' @import dplyr
 #'
 #' @importFrom rlang .data
+#' @importFrom stats p.adjust
 #'
 #' @export
 #'
@@ -70,7 +71,9 @@ histone_summary <- function(df, label_col, base_cols, base_std = NA, target_col,
   }
   result_df <- dplyr::mutate(result_df,
                              "log2(FC)" = log2(target_col/base_avg),
-                             "T score" = (target_col - base_avg)/(target_std/base_num),
-                             "P value" = stats::pt(q = `T score`, df = (base_num - 1)))
+                             "T score" = (target_col - base_avg)/(target_std/sqrt(base_num)),
+                             "P value" = 2*stats::pt(q = abs(`T score`), df = (base_num - 1), lower.tail = FALSE))
+  result_df$`P_unadj` <- result_df$`P value`
+  result_df$`P_adj` <- p.adjust(result_df$`P value`, method = "BH")
   return(result_df)
 }
