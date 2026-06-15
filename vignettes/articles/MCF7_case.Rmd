@@ -136,8 +136,8 @@ total_GSEA_list <- sort(total_GSEA_list, decreasing = TRUE)
 ```{r total-enrich}
 total_GSEA_GO <- gseGO(geneList = total_GSEA_list, OrgDb = "org.Hs.eg.db",
                     verbose = FALSE, ont = "ALL")
-# By visual inspection, this contains overlapping terms
-simple_total_GSEA_GO <- clusterProfiler::simplify(total_GSEA_GO)
+# By visual inspection of graphs, this contained redundant terms - use simplify() to reduce if desired
+# simple_total_GSEA_GO <- clusterProfiler::simplify(total_GSEA_GO)
 total_GSEA_KEGG <- gseKEGG(geneList = total_GSEA_list, verbose = FALSE)
 ```
 
@@ -167,7 +167,7 @@ if (nrow(total_GSEA_KEGG@result) > 0) {
 ```
 ```{r clear-1}
 # Clearing large variables
-rm(total_GSEA_GO, simple_total_GSEA_GO, total_GSEA_KEGG, total_GSEA_list, MCF7_total)
+rm(total_GSEA_GO, total_GSEA_KEGG, total_GSEA_list, MCF7_total)
 ```
 
 
