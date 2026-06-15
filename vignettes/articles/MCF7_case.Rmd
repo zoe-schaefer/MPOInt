@@ -137,7 +137,11 @@ total_GSEA_list <- sort(total_GSEA_list, decreasing = TRUE)
 total_GSEA_GO <- gseGO(geneList = total_GSEA_list, OrgDb = "org.Hs.eg.db",
                     verbose = FALSE, ont = "ALL")
 # By visual inspection, this contains overlapping terms
-simple_total_GSEA_GO <- clusterProfiler::simplify(total_GSEA_GO)
+if (total_GSEA_GO@setType %in% c("BP", "CC", "MF")) {
+  simple_total_GSEA_GO <- clusterProfiler::simplify(total_GSEA_GO)
+} else {
+  simple_total_GSEA_GO <- total_GSEA_GO
+}
 total_GSEA_KEGG <- gseKEGG(geneList = total_GSEA_list, verbose = FALSE)
 ```
 
