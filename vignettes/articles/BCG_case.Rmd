@@ -235,7 +235,11 @@ Here we use the `simplify` function from clusterProfiler to combine redundant GS
 phospho_GSEA_GO <- gseGO(geneList = phospho_GSEA_list, OrgDb = "org.Hs.eg.db",
                     verbose = FALSE, ont = "ALL")
 # By visual inspection of graphs, this contained redundant terms
-simple_phospho_GSEA_GO <- clusterProfiler::simplify(phospho_GSEA_GO)
+if (phospho_GSEA_GO@setType %in% c("BP", "CC", "MF")) {
+  simple_phospho_GSEA_GO <- clusterProfiler::simplify(phospho_GSEA_GO)
+} else {
+  simple_phospho_GSEA_GO <- phospho_GSEA_GO
+}
 phospho_GSEA_KEGG <- gseKEGG(geneList = phospho_GSEA_list, verbose = FALSE)
 ```
 
